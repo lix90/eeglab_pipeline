@@ -2,15 +2,15 @@ clear, clc, close
 
 %% parameters
 baseDir = '';
-input = 'raw';
-output = 'merge';
+in = 'raw';
+out = 'merge';
 fileExt = 'eeg';
 splitPos = 1;
 poolsize = 4;
 
 %%
-inputDir = fullfile(baseDir, input);
-outputDir = fullfile(baseDir, output);
+inputDir = fullfile(baseDir, in);
+outputDir = fullfile(baseDir, out);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 tmp = dir(fullfile(inputDir, '*', fileExt));
 fileName = {tmp.name};
