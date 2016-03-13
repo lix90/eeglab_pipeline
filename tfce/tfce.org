@@ -1,0 +1,22 @@
+#+TITLE: TFCE NOTES
+#+AUTHOR: LIX
+
+* PROCEDURES
+
+** data manipulation
+
+Data is a cellarray
+Data = {data1, data2; data3, data4};
+data1 is a matrix array
+the first dimension of data1 is participant
+the second is channels
+the third is time point
+the fourth is frequency point?
+
+** calculate neighbours
+
+** calculate the actual T/F values of all data
+
+** calculate the permutation T/F values of all data
+
+** calculate the p value from the permutation distribution

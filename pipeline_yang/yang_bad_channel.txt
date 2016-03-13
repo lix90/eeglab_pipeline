@@ -1,0 +1,5 @@
+mazhen: C1;
+chenfang: P1;
+liangbaishun: TP7;
+longfan: P3, left 51 channels
+wangdan: CP5;

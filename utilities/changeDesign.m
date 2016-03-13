@@ -1,0 +1,6 @@
+function STUDY = changeDesign(STUDY, ALLEEG, EEG, conditions)
+
+STUDY = std_makedesign(STUDY, ALLEEG, 1, ...
+                       'variable1', 'type', 'pairing1', 'on', ...
+                       'values1', conditions);
+STUDY = pop_savestudy(STUDY, EEG, 'savemode', 'resave');

@@ -4,11 +4,12 @@
 pipName = 'laplac';
 poolsize = 4;
 
-%% code -------------------------------------------------------------------------
 % directory
-baseDir = '';
+baseDir = '~/Data/yang_select/';
 inputDir = fullfile(baseDir, 'ica');
 outputDir = fullfile(baseDir, pipName);
+
+%% code -------------------------------------------------------------------------
 
 % check directory
 if ~exist(inputDir, 'dir')
@@ -29,9 +30,9 @@ if matlabpool('size') < poolsize
     matlabpool('local', poolsize);
 end
 
-parfor i = 1:n
+for i = 1:n
 
-    name = strcat(ID{i}, '_', pipName, '.set');
+    name = strcat(id{i}, '_', pipName, '.set');
     outName = fullfile(outputDir, name);
     if exist(outName, 'file'); warning('files already exist'); continue; end
 
@@ -43,7 +44,9 @@ parfor i = 1:n
 
     %% delete artifactual ICs & compute pval
     % compute pval
-    EEG.etc.pvaf = eeg_pvaf(EEG, [], 'artcomps', idxRejICs, 'plot', 'off');
+    EEG.icaact = eeg_getdatact(EEG, 'component', 1:size(EEG.icaweights, 1));
+    [pvaf, pvafs, vars] = eeg_pvaf(EEG, find(~EEG.reject.gcompreject), 'plot', 'off');
+    EEG.etc.pvaf = pvaf;
     % delete artifactual ICs
     EEG = pop_subcomp(EEG, idxRejICs, 0);
     EEG = eeg_checkset(EEG);
