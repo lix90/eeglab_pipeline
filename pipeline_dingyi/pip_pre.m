@@ -1,33 +1,38 @@
-%% pipeline codes for analysing eeg data of iris' pain empathy experiment
 %% script for preprocessing before ICA
+addpath(genpath('~/programs/matlabtoolbox/eeglab/plugins/PrepPipelinev0.50/utilities'));
+% 1. load channel location file
+% 2. detrend
+% 3. cleanline noise
+% 4. remove bad channel
+% 5. re-reference to m1-m2
+% * manually check data
+% 6. ica
+% * manually check data
+% 7. remove artifactual ICs (and compute pvaf of left ICs)
+% 8. epoch into 4 epoches
+% 9. frequency analysis (get relative power of rhythm activity)
+
 baseDir = '~/data/dingyi/';
-inputDir = fullfile(baseDir, 'merge');
+inputDir = fullfile(baseDir, 'raw');
 outputDir = fullfile(baseDir, 'pre');
+markDir = fullfile(baseDir, 'marks');
 poolsize = 2;
 % preprocessing parameters
 ds = 250; % downsampling
-hf = 1; % hi-pass filtering
+hf = 0.1; % hi-pass filtering
 loc = 'Spherical'; % channel loacation file type 'Spherical' or 'MNI'
-rm	= {'VEOG', 'HEOG', 'TP9', 'TP10'};
+rm = {'HEO', 'VEO'}; % 
 rthresh = 0.5;
-onref = 'FCz';
-ref = 'average';
-CHANGE 	= true; % change event name
-EPOCHTIME = [-1, 2]; % epoch time range
-FROM 		= {'S 11', 'S 12', 'S 13', 'S 14',...
-		   	   'S 21', 'S 22', 'S 23', 'S 24',...
-		   	   'S 31', 'S 32', 'S 33', 'S 34'};
-TO			= {'Old_Pain', 'Old_noPain', 'Old_Pain', 'Old_noPain', ...
-		   	   'Adult_Pain', 'Adult_noPain', 'Adult_Pain', 'Adult_noPain', ...
-		   	   'Child_Pain', 'Child_noPain', 'Child_Pain', 'Child_noPain'};
-STIM 		= FROM;
-RESP 		= {'S  7', 'S  8', 'S  9'};		
-
+onref = 'M1';
+ref = {'M1', 'M2'};
+eventfields = {'type', 'latency', 'duration'};
+timeunit = 0.001; % ms
+    
 % switch loc
 %   case 'MNI'
 %     locFile = 'standard_1005.elc';
 %   case 'Spherical'
-locFile = 'standard-10-5-cap385.elp';
+    locFile = 'standard-10-5-cap385.elp';
 % end 
 eeglabDir = fileparts(which('eeglab.m'));
 locDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BESA', locFile);
@@ -101,15 +106,15 @@ parfor i = 1:nFile
     EEG = pop_eegfiltnew(EEG, hf, []);
     EEG = eeg_checkset(EEG);
     % cleanline noise
-% $$$          disp('cleanning line noise');
-% $$$          lineNoiseIn = struct('lineNoiseChannels', [1:EEG.nbchan],...
-% $$$                               'lineFrequencies', [50]);
-% $$$          [EEG, lineNoiseOut] = cleanLineNoise(EEG, lineNoiseIn);
-% re-reference m1-m2
-% $$$                                 refidx = find(ismember({EEG.chanlocs.labels}, ref));
-% $$$                                 EEG = pop_reref(EEG, refidx);
-% $$$                                 EEG = eeg_checkset(EEG);
-% remove nonbrain channels
+    disp('cleanning line noise');
+    lineNoiseIn = struct('lineNoiseChannels', [1:EEG.nbchan],...
+                         'lineFrequencies', [50]);
+    [EEG, lineNoiseOut] = cleanLineNoise(EEG, lineNoiseIn);
+    % re-reference m1-m2
+    refidx = find(ismember({EEG.chanlocs.labels}, ref));
+    EEG = pop_reref(EEG, refidx);
+    EEG = eeg_checkset(EEG);
+    % remove nonbrain channels
     rmidx = ismember({EEG.chanlocs.labels}, rm);
     EEG = pop_select(EEG, 'nochannel', find(rmidx));
     EEG = eeg_checkset(EEG);
@@ -139,25 +144,15 @@ parfor i = 1:nFile
     end
     EEG = eeg_checkset(EEG);
     EEGclean = []; 
-    if strcmpi(ref, 'average')
-        EEG = pop_reref(EEG, []);
-    elseif iscellstr(ref)
-        indRef = ismember({EEG.chanlocs.labels}, ref);
-        EEG = pop_reref(EEG, indRef);
-    end
-    EEG = eeg_checkset(EEG); 
-    % change events
-    EEG = readable_event(EEG, RESP, STIM, CHANGE, FROM, TO);
-    % epoch
-    if CHANGE
-        MARKS = unique(TO);
-    else
-        MARKS = unique(FROM);
-    end
-    EEG = pop_epoch(EEG, MARKS, EPOCHTIME);
-    % remove baseline
-    EEG = pop_rmbase(EEG, []);
-    EEG = eeg_checkset(EEG);
+    % % re-reference
+    % if strcmpi(ref, 'average')
+    %     EEG = pop_reref(EEG, []);
+    % elseif iscellstr(ref)
+    %     indRef = ismember({EEG.chanlocs.labels}, ref);
+    %     EEG = pop_reref(EEG, indRef);
+    % end
+    % EEG = eeg_checkset(EEG); 
+    % save dataset
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = []; 
 end
