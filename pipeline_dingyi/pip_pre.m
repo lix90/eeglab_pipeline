@@ -12,17 +12,16 @@ addpath(genpath('~/programs/matlabtoolbox/eeglab/plugins/PrepPipelinev0.50/utili
 % 8. epoch into 4 epoches
 % 9. frequency analysis (get relative power of rhythm activity)
 
-baseDir = '~/data/dingyi/';
+baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'raw');
 outputDir = fullfile(baseDir, 'pre');
-markDir = fullfile(baseDir, 'marks');
-poolsize = 2;
+poolsize = 4;
 % preprocessing parameters
 ds = 250; % downsampling
-hf = 0.1; % hi-pass filtering
+hf = 0.5; % hi-pass filtering
 loc = 'Spherical'; % channel loacation file type 'Spherical' or 'MNI'
 rm = {'HEO', 'VEO', 'Trigger'};
-% rthresh = 0.5;
+rthresh = 0.5;
 % onref = 'M1';
 % ref = {'M1', 'M2'};
 % eventfields = {'type', 'latency', 'duration'};
@@ -93,27 +92,27 @@ parfor i = 1:nFile
     % backup channel location file
     EEG.etc.origchanlocs = EEG.chanlocs; 
     % remove bad channels
-    % arg_flatline = 5; % default is 5
-    % arg_highpass = 'off';
-    % arg_channel = rthresh; % default is 0.85
-    % arg_noisy = [];
-    % arg_burst = 'off';
-    % arg_window = 'off';
-    % EEGclean = clean_rawdata(EEG, ...
-    %                          arg_flatline, ...
-    %                          arg_highpass, ...
-    %                          arg_channel, ...
-    %                          arg_noisy, ...
-    %                          arg_burst, ...
-    %                          arg_window);
-    % chanLabels = {EEG.chanlocs.labels};
-    % if isfield(EEGclean.etc, 'clean_channel_mask')
-    %     EEG.etc.badChanLabelsASR = chanLabels(~EEGclean.etc.clean_channel_mask);
-    %     EEG.etc.badChanLabelsASR
-    %     EEG = pop_select(EEG, 'nochannel', find(~EEGclean.etc.clean_channel_mask));
-    % else
-    %     EEG.etc.badChanLabelsASR = {[]};
-    % end
+    arg_flatline = 5; % default is 5
+    arg_highpass = 'off';
+    arg_channel = rthresh; % default is 0.85
+    arg_noisy = [];
+    arg_burst = 'off';
+    arg_window = 'off';
+    EEGclean = clean_rawdata(EEG, ...
+                             arg_flatline, ...
+                             arg_highpass, ...
+                             arg_channel, ...
+                             arg_noisy, ...
+                             arg_burst, ...
+                             arg_window);
+    chanLabels = {EEG.chanlocs.labels};
+    if isfield(EEGclean.etc, 'clean_channel_mask')
+        EEG.etc.badChanLabelsASR = chanLabels(~EEGclean.etc.clean_channel_mask);
+        EEG.etc.badChanLabelsASR
+        EEG = pop_select(EEG, 'nochannel', find(~EEGclean.etc.clean_channel_mask));
+    else
+        EEG.etc.badChanLabelsASR = {[]};
+    end
     EEG = eeg_checkset(EEG);
     EEGclean = []; 
     % % re-reference

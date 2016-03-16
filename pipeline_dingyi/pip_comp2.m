@@ -12,7 +12,7 @@ outputDir = fullfile(baseDir, 'power');
 marksDir = fullfile(baseDir, 'marks');
 poolsize = 2;
 restLength = 30;
-eeglabDir = '';
+eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 
 % prepare datasets

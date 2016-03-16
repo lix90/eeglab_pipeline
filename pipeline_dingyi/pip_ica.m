@@ -3,13 +3,13 @@
 % 6. ica
 % * manually check data
 
-baseDir = '~/data/dingyi/';
+baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'pre');
 outputDir = fullfile(baseDir, 'ica');
-poolsize = 2;
+poolsize = 4;
 RV = 1;
 MODEL = 'Spherical';
-eeglabDir = fullfile(fileparts(which('eeglab.m')));
+eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 
 %% channel location files
@@ -36,11 +36,11 @@ nFile = numel(fileName);
 ID = get_prefix(fileName, 1);
 ID = unique(ID);
 
-% if matlabpool('size')<poolsize
-% matlabpool('local', poolsize);
-% end
+if matlabpool('size')<poolsize
+    matlabpool('local', poolsize);
+end
 
-for i = 1 
+parfor i = nFile
     % prepare output filename
     name = strcat(ID{i}, '_ica.set');
     outName = fullfile(outputDir, name);
@@ -48,10 +48,6 @@ for i = 1
     if exist(outName, 'file'); warning('files already exist'); continue; end 
     % load dataset
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
-    EEG = eeg_checkset(EEG); 
-    % remove Trigger
-    rmidx = find(strcmp({EEG.chanlocs.labels}, {'Trigger'}));
-    EEG = pop_select(EEG, 'nochannel', rmidx);
     EEG = eeg_checkset(EEG);
     % ica
     EEG = pop_runica(EEG,'extended', 1, 'interupt', 'on');
@@ -76,9 +72,9 @@ for i = 1
     EEG = eeg_checkset(EEG);
     % identify outside dipoles and dipoles rv above 15%
     selectedICs = eeg_dipselect(EEG, 15, 'inbrain', 1);
-    badICs = zeros(1, nbcomp);
-    badICs(selectedICs) = 1;
-    EEG.reject.gcompreject = badICs;
+    goodICs = zeros(1, nbcomp);
+    goodICs(selectedICs) = 1;
+    EEG.reject.gcompreject = ~goodICs;
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = []; 
 end
