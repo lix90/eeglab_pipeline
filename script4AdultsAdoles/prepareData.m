@@ -1,4 +1,5 @@
-indir = '';
+indir = '~/data/adolesvsadult/conditiondata/ersp_data/';
+outdir = '~/data/adolesvsadult/conditiondata/ersp/';
 nsubj = 40;
 ncond = 3;
 group = [20, 20];
@@ -7,7 +8,7 @@ ntime = 200;
 nfreq = 100;
 
 for igroup = 1:numel(group)
-    tmpng = ngroup(igroup);
+    tmpng = group(igroup);
     if igroup == 1
         tmpsubj = 1:tmpng;
     else igroup == 2
@@ -15,19 +16,18 @@ for igroup = 1:numel(group)
     end
     for iconds = 1:ncond
         outfile = zeros(nfreq, ntime, nchan, tmpng);
-        outfilename = sprintf('ersp_g%s_c%s.mat');
+        outfilename = sprintf('ersp_g%i_c%i.mat', igroup, iconds);
         for isubjs = 1:tmpng
-            filename = sprintf('design1_%s_%s_%s.datersp', ...
-                               num2str(tmpsubj(isubjs)), ...
-                               num2str(conds(iconds)), ...
-                               num2str(group(igroup))).
+            filename = sprintf('design1_%i_%i_%i.datersp', ...
+                               tmpsubj(isubjs), iconds, igroup);
             x = importdata(fullfile(indir, filename));
-            nchan = numel(chanlabels);
+            nchan = numel(x.chanlabels);
             for ichan = 1:nchan
                 chanersp = sprintf('chan%s_ersp', num2str(ichan));
                 outfile(:,:,ichan,isubjs) = x.(chanersp);
             end
         end
-        save(fullfile(indir, outfilename));
+        fprintf('save files\n');
+        save(fullfile(outdir, outfilename));
     end
 end

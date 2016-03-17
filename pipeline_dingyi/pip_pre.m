@@ -94,10 +94,10 @@ parfor i = 1:nFile
     % remove bad channels
     arg_flatline = 5; % default is 5
     arg_highpass = 'off';
-    arg_channel = rthresh; % default is 0.85
-    arg_noisy = [];
-    arg_burst = 'off';
-    arg_window = 'off';
+    arg_channel = 0.6; % default is 0.85
+    arg_noisy = 4;
+    arg_burst = 20;
+    arg_window = 0.5;
     EEGclean = clean_rawdata(EEG, ...
                              arg_flatline, ...
                              arg_highpass, ...

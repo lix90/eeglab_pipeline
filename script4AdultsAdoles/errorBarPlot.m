@@ -3,16 +3,17 @@
 % beta: 18-20Hz, 500-600ms
 %% prepare input parameters
 indir = '~/data/adolesvsadult/conditiondata/';
+outdir = '~/data/adolesvsadult/conditiondata/ersp/image/'
 theta = [5.5, 7.5, 500, 600];
 alpha = [10.5, 12, 850, 950];
 beta = [18, 20, 500, 600];
 % plot
 chan = {'F3', 'Fz', 'F4', 'FC3', 'FCz', 'FC4',...
         'C3', 'Cz', 'C4', 'CP3', 'CPz', 'CP4'};
-% $$$ chan = {'PO7', 'PO8', 'PO3', 'PO4', 'POz', ...
-% $$$         'Oz', 'O1', 'O2'};
+% chan = {'PO7', 'PO8', 'PO3', 'PO4', 'POz', ...
+%         'Oz', 'O1', 'O2'};
 band = {'theta', 'beta'};
-%band = {'alpha'};
+% band = {'alpha'};
 LEGEND = {'High', 'Medium', 'Neutral'};
 XTICKLABEL = {'Adults', 'Adolescents'};
 YLABEL = 'ERSP (dB)';
@@ -65,12 +66,20 @@ for j = 1:numel(chan)
         end
     end
     % save image
-    outName = strcat('errBarSpec_', band{i}, '_', ...
-                     num2str(roi(1)), '-', num2str(roi(2)), '_', ...
-                     num2str(roi(3)), '-', num2str(roi(4)), '_', chan{j});
+    if strcmp(band{i}, 'alpha')
+        outName = strcat('errBarSpec_', band{i}, '_', ...
+                         num2str(roi(1)), '-', num2str(roi(2)), '_', ...
+                         num2str(roi(3)), '-', num2str(roi(4)), '_', ...
+                         chan{j});
+    else
+        outName = strcat('errBarSpec_theta-beta_', ...
+                         num2str(roi(1)), '-', num2str(roi(2)), '_', ...
+                         num2str(roi(3)), '-', num2str(roi(4)), '_', ...
+                         chan{j});
+    end
     print(gcf, '-djpeg', '-cmyk', '-painters', ...
-          fullfile(indir, 'output', strcat(outName, '.jpg')));
+          fullfile(outdir, strcat(outName, '.jpg')));
     print(gcf, '-depsc', '-painters', ...
-          fullfile(indir, 'output', strcat(outName, '.eps')));
+          fullfile(outdir, strcat(outName, '.eps')));
 end
 close all
