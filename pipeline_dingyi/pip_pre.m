@@ -1,5 +1,4 @@
 %% script for preprocessing before ICA
-addpath(genpath('~/programs/matlabtoolbox/eeglab/plugins/PrepPipelinev0.50/utilities'));
 % 1. load channel location file
 % 2. detrend
 % 3. cleanline noise
@@ -34,6 +33,7 @@ rthresh = 0.5;
 locFile = 'standard-10-5-cap385.elp';
 % end 
 eeglabDir = fileparts(which('eeglab.m'));
+addpath(genpath(eeglabDir));
 locDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BESA', locFile);
 if ispc
     locDir = strrep(locDir, '\', '/');
