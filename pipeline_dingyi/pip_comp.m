@@ -7,13 +7,10 @@ clear, clc, close all;
 % set directory
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'ica_noRemoveWindows_1hz');
-outputDir = fullfile(baseDir, 'spec_noRemoveWindows_1hz');
+outputDir = fullfile(baseDir, 'interp_noRemoveWindows_1hz');
 marksDir = fullfile(baseDir, 'marks');
 poolsize = 4;
-restLength = 30;
-cut = 0;
-tags = {'rest', 'task1', 'task2', 'task3'};
-marks = {'1', '4', '5', '6'};
+
 eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 % prepare datasets
@@ -28,59 +25,42 @@ ID = unique(ID);
 % if matlabpool('size') < poolsize
 %     matlabpool('local', poolsize)
 % end
-load(strcat(marksDir, filesep, 'duration.mat'));
-
-for i = 1:1
-    restDuration = duration(1, i);
-    if restDuration < restLength; disp('resting time is too short'); continue; ...
-    end
+load(strcat(marksDir, filesep, 'chanlocs.mat'));
+ALLEEG = []; EEG = [];
+eeglab
+for i = 1:nFile
     pvafOut = struct();
-    out = struct();
-    name = strcat(ID{i}, '_spec.mat');
+    outNamePvaf = fullfile(outputDir, strcat('pvaf_', ID{i}, '.mat'));
+    outName = fullfile(outputDir, strcat(ID{i}, '_interp.set'));
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % loading
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
-    [ALLEEG EEG CURRENTSET = eeg_store(ALLEEG, EEG, 0);
-     EEG = eeg_checkset(EEG);
+    [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, 0);
+    EEG = eeg_checkset(EEG);
     % compute pvafs
-     if isempty(EEG.icaact)
+    if isempty(EEG.icaact)
         EEG.icaact = eeg_getdatact(EEG, ...
                                    'component', 1:size(EEG.icaweights, 1));
-     end
-     [pvaf, pvafs, vars] = eeg_pvaf(EEG, find(~EEG.reject.gcompreject), 'plot', 'off');
-     pvafOut.pvaf = pvaf;
-     pvafOut.pvafs = pvafs;
-     pvafOut.vars = vars;
-     parsave(outNamePvaf, pvafOut);
-     % remove artfactual ICs
-     EEG = pop_subcomp(EEG, find(EEG.reject.gcompreject), 0);
-     EEG = eeg_checkset(EEG);
-     % interpolate bad channels
-     power.chanlocs = EEG.etc.origchanlocs;
-     EEG = eeg_interp(EEG, EEG.etc.origchanlocs, 'spherical');
-     EEG = eeg_checkset(EEG);
-     % epoch
-     tags = {'rest', 'task1', 'task2', 'task3'};
-     marks = {'1', '4', '5', '6'};
-     for itag = 1:numel(tags)
-         fprintf('spectral analysis of %s\n', tags{itag});
-         outName = fullfile(outputDir, strcat(tags{itag}, '_', name));
-         if itag == 1 % rest
-             EEG = pop_epoch(EEG, marks{itag}, ...
-                             [restDuration-restLength, restDuration]);
-             EEG = eeg_checkset(EEG);
-         else
-             EEG = pop_epoch(EEG, marks{itag}, ...
-                             [0+cut, duration(itag, i)-cut]);
-         end
-         [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, itag, 'gui', 'off');
-         EEG = eeg_checkset(EEG);
-         EEG = pop_rmbase(EEG, []);
-         [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, itag, 'gui', 'off');
-         [out.spec, out.freq, ~, ~, ~] = spectopo(EEG.data, 0, EEG.srate, ...
-                                                  'plot', 'off');
-         parsave(outName, out);
-         [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, itag, 'retrieve', 1);
-     end
-     EEG = []; ALLEEG = []; CURRENTSET = 0;
+    end
+    [pvaf, pvafs, vars] = eeg_pvaf(EEG, find(~EEG.reject.gcompreject), ...
+                                   'plot', 'off');
+    pvafOut.pvaf = pvaf;
+    pvafOut.pvafs = pvafs;
+    pvafOut.vars = vars;
+    parsave(outNamePvaf, pvafOut);
+    % remove artfactual ICs
+    EEG = pop_subcomp(EEG, find(EEG.reject.gcompreject), 0);
+    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1, 'gui', 'off');
+    EEG = eeg_checkset(EEG);
+    % interpolate bad channels
+    % chanlocs = EEG.etc.origchanlocs;
+    % if i == 2
+    %     parsave(outNameChanlocs, chanlocs);
+    % end
+    EEG = eeg_interp(EEG, y, 'spherical');
+    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1, 'gui', 'off');
+    EEG = eeg_checkset(EEG);
+    EEG = pop_saveset(EEG, outName);
+    EEG = []; ALLEEG = [];
 end
+eeglab redraw
