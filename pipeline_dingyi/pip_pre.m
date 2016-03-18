@@ -13,11 +13,11 @@
 
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'raw');
-outputDir = fullfile(baseDir, 'pre');
+outputDir = fullfile(baseDir, 'pre_noRemoveWindows_1hz');
 poolsize = 4;
 % preprocessing parameters
 ds = 250; % downsampling
-hf = 0.5; % hi-pass filtering
+hf = 1; % hi-pass filtering
 loc = 'Spherical'; % channel loacation file type 'Spherical' or 'MNI'
 rm = {'HEO', 'VEO', 'Trigger'};
 rthresh = 0.5;
@@ -96,25 +96,26 @@ parfor i = 1:nFile
     arg_highpass = 'off';
     arg_channel = 0.6; % default is 0.85
     arg_noisy = 4;
-    arg_burst = 20;
-    arg_window = 0.5;
-    EEGclean = clean_rawdata(EEG, ...
-                             arg_flatline, ...
-                             arg_highpass, ...
-                             arg_channel, ...
-                             arg_noisy, ...
-                             arg_burst, ...
-                             arg_window);
-    chanLabels = {EEG.chanlocs.labels};
-    if isfield(EEGclean.etc, 'clean_channel_mask')
-        EEG.etc.badChanLabelsASR = chanLabels(~EEGclean.etc.clean_channel_mask);
-        EEG.etc.badChanLabelsASR
-        EEG = pop_select(EEG, 'nochannel', find(~EEGclean.etc.clean_channel_mask));
-    else
-        EEG.etc.badChanLabelsASR = {[]};
-    end
-    EEG = eeg_checkset(EEG);
-    EEGclean = []; 
+    arg_burst = 'off';
+    arg_window = 'off';
+    EEG = clean_rawdata(EEG, ...
+                        arg_flatline, ...
+                        arg_highpass, ...
+                        arg_channel, ...
+                        arg_noisy, ...
+                        arg_burst, ...
+                        arg_window);
+    % chanLabels = {EEG.chanlocs.labels};
+    % if isfield(EEGclean.etc, 'clean_channel_mask')
+    %     EEG.etc.badChanLabelsASR = chanLabels(~EEGclean.etc.clean_channel_mask);
+    %     EEG.etc.badChanLabelsASR
+    %     EEG = pop_select(EEG, 'nochannel', find(~EEGclean.etc.clean_channel_mask));
+    % else
+    %     EEG.etc.badChanLabelsASR = {[]};
+    % end
+    % EEG = eeg_checkset(EEG);
+    % EEGclean = [];
+    
     % % re-reference
     % if strcmpi(ref, 'average')
     %     EEG = pop_reref(EEG, []);

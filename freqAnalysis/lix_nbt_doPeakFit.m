@@ -85,14 +85,14 @@ function PeakFitObject = lix_nbt_doPeakFit(NBTSignal, InfoObject, FrequencyBands
     end
 
 
-    PeakFitObject = nbt_PeakFit(size(NBTSignal,2));
+    PeakFitObject = lix_nbt_PeakFit(size(NBTSignal,2));
     PeakFitObject.PSDFreqResolution = InfoObject.converted_sample_frequency/PSDFreqResolution;
     PeakFitObject.PSDWindow = PSDWindow;
     PeakFitObject.PSDOverlap = PSDOverlap;
 
     %Prepare Signal
-    NBTSignal = nbt_RemoveIntervals(NBTSignal,InfoObject);
-    [NBTSignal] = nbt_filter_firHp(NBTSignal,0.5,InfoObject.converted_sample_frequency,4); %this high-pass is done to get better a PSD
+    % NBTSignal = nbt_RemoveIntervals(NBTSignal,InfoObject);
+    % [NBTSignal] = nbt_filter_firHp(NBTSignal,0.5,InfoObject.converted_sample_frequency,4); %this high-pass is done to get better a PSD
 
 
     for ChId=1:size(NBTSignal(:,:),2)
@@ -328,29 +328,29 @@ function PeakFitObject = lix_nbt_doPeakFit(NBTSignal, InfoObject, FrequencyBands
     PeakFitObject.SpectralEdge_Delta = PeakFitObject.SpectralEdge{1};
     PeakFitObject.SpectralEdge_Theta = PeakFitObject.SpectralEdge{2};
     PeakFitObject.SpectralEdge_Alpha = PeakFitObject.SpectralEdge{3};
-            PeakFitObject.SpectralEdge_Beta = PeakFitObject.SpectralEdge{4};
-            PeakFitObject.SpectralEdge_Gamma = PeakFitObject.SpectralEdge{5};
+    PeakFitObject.SpectralEdge_Beta = PeakFitObject.SpectralEdge{4};
+    PeakFitObject.SpectralEdge_Gamma = PeakFitObject.SpectralEdge{5};
 
-            PeakFitObject.AbsolutePower_Delta = PeakFitObject.AbsolutePower{1};
-            PeakFitObject.AbsolutePower_Theta = PeakFitObject.AbsolutePower{2};
-            PeakFitObject.AbsolutePower_Alpha = PeakFitObject.AbsolutePower{3};
-            PeakFitObject.AbsolutePower_Beta = PeakFitObject.AbsolutePower{4};
-            PeakFitObject.AbsolutePower_Gamma = PeakFitObject.AbsolutePower{5};
-            PeakFitObject.AbsolutePower_Broadband = PeakFitObject.AbsolutePower{6};
-            PeakFitObject.AbsolutePower_Alpha1 = PeakFitObject.AbsolutePower{7};
-            PeakFitObject.AbsolutePower_Alpha2 = PeakFitObject.AbsolutePower{8};
+    PeakFitObject.AbsolutePower_Delta = PeakFitObject.AbsolutePower{1};
+    PeakFitObject.AbsolutePower_Theta = PeakFitObject.AbsolutePower{2};
+    PeakFitObject.AbsolutePower_Alpha = PeakFitObject.AbsolutePower{3};
+    PeakFitObject.AbsolutePower_Beta = PeakFitObject.AbsolutePower{4};
+    PeakFitObject.AbsolutePower_Gamma = PeakFitObject.AbsolutePower{5};
+    PeakFitObject.AbsolutePower_Broadband = PeakFitObject.AbsolutePower{6};
+    PeakFitObject.AbsolutePower_Alpha1 = PeakFitObject.AbsolutePower{7};
+    PeakFitObject.AbsolutePower_Alpha2 = PeakFitObject.AbsolutePower{8};
             
-            PeakFitObject.RelativePower_Delta = PeakFitObject.RelativePower{1};
-            PeakFitObject.RelativePower_Theta = PeakFitObject.RelativePower{2};
-            PeakFitObject.RelativePower_Alpha = PeakFitObject.RelativePower{3};
-            PeakFitObject.RelativePower_Beta = PeakFitObject.RelativePower{4};
-            PeakFitObject.RelativePower_Gamma = PeakFitObject.RelativePower{5};
+    PeakFitObject.RelativePower_Delta = PeakFitObject.RelativePower{1};
+    PeakFitObject.RelativePower_Theta = PeakFitObject.RelativePower{2};
+    PeakFitObject.RelativePower_Alpha = PeakFitObject.RelativePower{3};
+    PeakFitObject.RelativePower_Beta = PeakFitObject.RelativePower{4};
+    PeakFitObject.RelativePower_Gamma = PeakFitObject.RelativePower{5};
             
-%Update information
-% assignin('base','thenewPeakFitObject',PeakFitObject);
-%PeakFitObject.p=[];
-% PeakFitObject = nbt_UpdateBiomarkerInfo(PeakFitObject, InfoObject); %change
-% by lix
+    %Update information
+    % assignin('base','thenewPeakFitObject',PeakFitObject);
+    %PeakFitObject.p=[];
+    % PeakFitObject = nbt_UpdateBiomarkerInfo(PeakFitObject, InfoObject); %change
+    % by lix
 
 end
 

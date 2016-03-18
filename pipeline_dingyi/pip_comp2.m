@@ -6,9 +6,9 @@
 clear, clc, close all;
 
 % set directory
-baseDir = '~/data/dingyi/';
-inputDir = fullfile(baseDir, 'ica');
-outputDir = fullfile(baseDir, 'power');
+baseDir = '~/Data/dingyi/';
+inputDir = fullfile(baseDir, 'ica_noRemoveWindows_1hz');
+outputDir = fullfile(baseDir, 'power_noRemoveWindows_1hz');
 marksDir = fullfile(baseDir, 'marks');
 poolsize = 2;
 restLength = 30;
@@ -26,19 +26,23 @@ ID = unique(ID);
 load(strcat(marksDir, filesep, 'duration.mat'));
 
 % Open matlab pool
-if matlabpool('size') < poolsize
-    matlabpool('local', poolsize)
-end
+% if matlabpool('size') < poolsize
+%     matlabpool('local', poolsize)
+% end
 
-parfor i = 1:nFile
+for i = 9:nFile
     restDuration = duration(1, i);
     if restDuration < restLength; disp('resting time is too short'); continue; ...
     end
-    powerOut = struct();
+    pvafOut = struct();
     name = strcat(ID{i}, '_power.mat');
-    outName = fullfile(outputDir, name);
+    outNameRest = fullfile(outputDir, strcat('rest_', name));
+    outNameTask1 = fullfile(outputDir, strcat('task1_', name));
+    outNameTask2 = fullfile(outputDir, strcat('task2_', name));
+    outNameTask3 = fullfile(outputDir, strcat('task3_', name));
+    outNamePvaf = fullfile(outputDir, strcat('pvaf_', name));
     % check if file exists
-    if exist(outName, 'file'); warning('files already exist'); continue; end
+    % if exist(outName, 'file'); warning('files already exist'); continue; end
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % loading
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
@@ -50,46 +54,47 @@ parfor i = 1:nFile
                                    'component', 1:size(EEG.icaweights, 1));
     end
     [pvaf, pvafs, vars] = eeg_pvaf(EEG, find(~EEG.reject.gcompreject), 'plot', 'off');
-    power.pvaf = pvaf;
-    power.pvafs = pvafs;
-    power.vars = vars;
+    pvafOut.pvaf = pvaf;
+    pvafOut.pvafs = pvafs;
+    pvafOut.vars = vars;
+    parsave(outNamePvaf, pvafOut);
     % remove artfactual ICs
     EEG = pop_subcomp(EEG, find(EEG.reject.gcompreject), 0);
     EEG = eeg_checkset(EEG);
     % interpolate bad channels
-    % powerOut.chanlocs = EEG.etc.origchanlocs;
-    % EEG = eeg_interp(EEG, EEG.etc.origchanlocs, 'spherical');
-    % EEG = eeg_checkset(EEG);
+    EEG = eeg_interp(EEG, EEG.etc.origchanlocs, 'spherical');
+    EEG = eeg_checkset(EEG);
     % epoch 1: rest
-    disp('spectral analysis of rest')
     EEGrest = pop_epoch(EEG, {'1'}, [restDuration-restLength, restDuration]);
     EEGrest = eeg_checkset(EEGrest);
+    EEGrest = pop_rmbase(EEGrest, []);
     PeakFitRest = lix_nbt_doPeakFit(EEGrest.data', info);
-    EEGrest = [];
+    disp('spectral analysis of rest')
+    parsave(outNameRest, PeakFitRest);
+
     % epoch 2: task 1
-    disp('spectral analysis of task 1')
     EEGtask1 = pop_epoch(EEG, {'4'}, [0, duration(2, i)]); % 5
     EEGtask1 = eeg_checkset(EEGtask1);
+    EEGtask1 = pop_rmbase(EEGtask1, []);
     PeakFitTask1 = lix_nbt_doPeakFit(EEGtask1.data', info);
-    EEGtask1 = [];
+    disp('spectral analysis of task 1')
+    parsave(outNameTask1, PeakFitTask1);
+
     % epoch 3: task 2
-    disp('spectral analysis of task 2')
     EEGtask2 = pop_epoch(EEG, {'5'}, [0, duration(3, i)]); % 6
     EEGtask2 = eeg_checkset(EEGtask2);
+    EEGtask2 = pop_rmbase(EEGtask2, []);
     PeakFitTask2 = lix_nbt_doPeakFit(EEGtask2.data', info);
-    EEGtask2 = [];
+    disp('spectral analysis of task 2')
+    parsave(outNameTask2, PeakFitTask2);
+
     % epoch 4: task 3
-    disp('spectral analysis of task 3')
     EEGtask3 = pop_epoch(EEG, {'6'}, [0, duration(4, i)]); % 7
     EEGtask3 = eeg_checkset(EEGtask3);
+    EEGtask3 = pop_rmbase(EEGtask3, []);
     PeakFitTask3 = lix_nbt_doPeakFit(EEGtask3.data', info);
-    EEGtask3 = [];
-    powerOut.rest = PeakFitRest;
-    powerOut.task1 = PeakFitTask1;
-    powerOut.task2 = PeakFitTask2;
-    powerOut.task3 = PeakFitTask3;
-    % save
-    parsave(outName, powerOut);
-    EEG = [];
+    disp('spectral analysis of task 3')
+    parsave(outNameTask3, PeakFitTask3);
 
+    EEG = [];
 end

@@ -4,8 +4,8 @@
 % * manually check data
 
 baseDir = '~/Data/dingyi/';
-inputDir = fullfile(baseDir, 'pre');
-outputDir = fullfile(baseDir, 'ica');
+inputDir = fullfile(baseDir, 'pre_noRemoveWindows_1hz');
+outputDir = fullfile(baseDir, 'ica_noRemoveWindows_1hz');
 poolsize = 4;
 RV = 1;
 MODEL = 'Spherical';
@@ -40,7 +40,7 @@ if matlabpool('size')<poolsize
     matlabpool('local', poolsize);
 end
 
-parfor i = nFile
+parfor i = 1:nFile
     % prepare output filename
     name = strcat(ID{i}, '_ica.set');
     outName = fullfile(outputDir, name);
@@ -53,28 +53,31 @@ parfor i = nFile
     EEG = pop_runica(EEG,'extended', 1, 'interupt', 'on');
     EEG = eeg_checkset(EEG);
     % dipfit
-    nbcomp = size(EEG.icaweights, 1);
-    nbchan = size(EEG.data, 1);
-    EEG = pop_dipfit_settings(EEG, ...
-                              'hdmfile', hdmfileDir,...
-                              'coordformat', MODEL,...
-                              'mrifile', mrifileDir,...
-                              'chanfile', chanfileDir,...
-                              'chansel',[1:nbchan]);
-    EEG = pop_dipfit_gridsearch(EEG, ...
-                                [1:nbcomp] ,...
-                                [-85:17:85] ,[-85:17:85] ,[0:17:85], ...
-                                RV);
-    EEG = eeg_checkset(EEG);
-    EEG = pop_multifit( EEG, [1:nbcomp] , ...
-                        'threshold', RV*100, ...
-                        'plotopt', {'normlen' 'on'});
-    EEG = eeg_checkset(EEG);
-    % identify outside dipoles and dipoles rv above 15%
-    selectedICs = eeg_dipselect(EEG, 15, 'inbrain', 1);
-    goodICs = zeros(1, nbcomp);
-    goodICs(selectedICs) = 1;
-    EEG.reject.gcompreject = ~goodICs;
+    % nbcomp = size(EEG.icaweights, 1);
+    % nbchan = size(EEG.data, 1);
+    % EEG = pop_dipfit_settings(EEG, ...
+    %                           'hdmfile', hdmfileDir,...
+    %                           'coordformat', MODEL,...
+    %                           'mrifile', mrifileDir,...
+    %                           'chanfile', chanfileDir,...
+    %                           'chansel',[1:nbchan]);
+    % EEG = pop_dipfit_gridsearch(EEG, ...
+    %                             [1:nbcomp] ,...
+    %                             [-85:17:85] ,[-85:17:85] ,[0:17:85], ...
+    %                             RV);
+    % EEG = eeg_checkset(EEG);
+    % EEG = pop_multifit( EEG, [1:nbcomp] , ...
+    %                     'threshold', RV*100, ...
+    %                     'plotopt', {'normlen' 'on'});
+    % EEG = eeg_checkset(EEG);
+    % % identify outside dipoles and dipoles rv above 15%
+    % selectedICs = eeg_dipselect(EEG, 100, 'inbrain', 1);
+    % goodICs = zeros(1, nbcomp);
+    % goodICs(selectedICs) = 1;
+    % EEG.reject.gcompreject = ~goodICs;
+    % EEG.reject.gcompreject = zeros(size(EEG.reject.gcompreject));
+    % EEG = eeg_checkset(EEG);
+    % EEG = pop_saveset(EEG, 'savemode', 'resave');
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = []; 
 end
