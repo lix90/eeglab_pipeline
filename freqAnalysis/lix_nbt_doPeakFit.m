@@ -267,7 +267,8 @@ function PeakFitObject = lix_nbt_doPeakFit(NBTSignal, InfoObject, FrequencyBands
             AbsolutePower(i) = sum(p1(findex1:findex2));
         
             findex3 = find(f1 >= 0,1);
-            findex4 = find(f1 <= 45,1,'last');
+            findex4 = find(f1 <= 45,1,'last'); % baseline of relative power:
+                                               % sum of power 1~45hz
         
             try
                 PeakFitObject.AbsolutePower{i,1}(ChId) = AbsolutePower(i);
