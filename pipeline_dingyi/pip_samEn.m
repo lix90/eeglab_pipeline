@@ -32,7 +32,6 @@ ALLEEG = []; EEG = [];
 for i = 1:nFile
 
     name = strcat(ID{i}, '_samEn.mat');
-    if exist(fullfile(inputDir, name), 'file'); continue; end
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % loading
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
