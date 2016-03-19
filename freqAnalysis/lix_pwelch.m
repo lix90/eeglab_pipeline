@@ -41,7 +41,7 @@ for iChan = 1:nChan
         find3 = find(f>=0,1);
         find4 = find(f<=45,1,'last');
         out.AbsPower{i,1}(iChan) = AbsolutePower(i);
-        out.RelPower{i,1}(iChan) = AbsolutePower(i)/sum(p(f3:f4));
+        out.RelPower{i,1}(iChan) = AbsolutePower(i)/sum(p(find3:find4));
     end
     psd{iChan} = p;
 end
@@ -49,10 +49,10 @@ end
 out.psd = psd;
 out.f = f;
 
-D = out.RelativePower{1};
-T = out.RelativePower{2};
-A = out.RelativePower{3};
-B = out.RelativePower{4};
+D = out.RelPower{1};
+T = out.RelPower{2};
+A = out.RelPower{3};
+B = out.RelPower{4};
 
 DA = D./A;
 DTAT = (D+T)./(A+T);
