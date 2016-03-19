@@ -1,10 +1,14 @@
 %% line plot for spectral time series
-outdir = '~/data/adolesvsadult/conditiondata/ersp/image/';
+outdir = '~/Desktop/image/';
 if ~exist(outdir, 'dir'); mkdir(outdir); end
 theta = [5.5, 7.5];
 alpha = [10.5, 12];
 beta = [18, 20];
 band = 'theta';
+freqs = fre;
+times = tim;
+chans = chanlabels;
+%%
 if strcmp(band, 'theta') || strcmp(band, 'beta')
     % chan = {'F3', 'Fz', 'F4', ...
     %         'FC3', 'FCz', 'FC4', ...
@@ -65,8 +69,8 @@ for i = 1:numel(chan)
     % save image
     outName = strcat('lineSpec_', band, '_', num2str(roi(1)), '-', ...
                      num2str(roi(2)), '_', chan{i});
-    % print(gcf, '-djpeg', '-cmyk', '-painters', ...
-    %       fullfile(indir, 'output', strcat(outName, '.jpg')));
+    print(gcf, '-djpeg', '-cmyk', '-painters', ...
+          fullfile(indir, 'output', strcat(outName, '.jpg')));
     print(gcf, '-depsc', '-painters', ...
           fullfile(outdir, strcat(outName, '.eps')));
     % save2pdf(fullfile(dir, 'output', strcat(outName, '.pdf')), ...

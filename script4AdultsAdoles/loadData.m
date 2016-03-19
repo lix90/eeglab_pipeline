@@ -1,19 +1,22 @@
 clear, clc
-indir = '~/data/Adult-Adole-Emotion/';
-cd(indir)
-% load data
-load(fullfile(indir, 'info.mat'));
-load(fullfile(indir, 'chanlocs.mat'));
-g1c1 = load(fullfile(indir, 'ersp_g1_c1.mat'));
-g1c2 = load(fullfile(indir, 'ersp_g1_c2.mat'));
-g1c3 = load(fullfile(indir, 'ersp_g1_c3.mat'));
-g2c1 = load(fullfile(indir, 'ersp_g2_c1.mat'));
-g2c2 = load(fullfile(indir, 'ersp_g2_c2.mat'));
-g2c3 = load(fullfile(indir, 'ersp_g2_c3.mat'));
+% indir1 = '~/data/Adult-Adole-Emotion/';
+indir = '/home/lix/Data/adultvsadole/conditiondata/';
 
-data = {g1c1.outfile, g2c1.outfile;
-        g1c2.outfile, g2c2.outfile;
-        g1c3.outfile, g2c3.outfile};
+% load data
+% load(fullfile(indir1, 'info.mat'));
+% load(fullfile(indir1, 'chanlocs.mat'));
+load(fullfile(indir, 'ADUHersp.mat'));
+load(fullfile(indir, 'ADUMersp.mat'));
+load(fullfile(indir, 'ADUNersp.mat'));
+load(fullfile(indir, 'ADOHersp.mat'));
+load(fullfile(indir, 'ADOMersp.mat'));
+load(fullfile(indir, 'ADONersp.mat'));
+load(fullfile(indir, 'tim.mat'));
+load(fullfile(indir, 'fre.mat'));
+load(fullfile(indir, 'chanlabels.mat'));
+data = {ADUHersp, ADOHersp;
+        ADUMersp, ADOMersp;
+        ADUNersp, ADONersp};
 
 % group1 = {g1c1.outfile, g1c2.outfile, g1c3.outfile};
 % group2 = {g2c1.outfile, g2c2.outfile, g2c3.outfile};
