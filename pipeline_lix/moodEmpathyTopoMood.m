@@ -18,8 +18,8 @@ beta2 = [21, 30, 300, 700];
 % tagBands = {'alpha', 'beta1', 'beta2'};
 % tagBands = {'alpha'};
 % tagChans = {'O1', 'Oz', 'O2'};
-tagBands = {'theta', 'alpha'};
-tagChans = {'F5', 'F3', 'Fz', 'F2', 'F4'};
+% tagBands = {'theta', 'alpha'};
+% tagChans = {'F5', 'F3', 'Fz', 'F2', 'F4'};
 
 ersp = {STUDY.changrp.erspdata};
 chanlabels = [STUDY.changrp.channels];
@@ -70,7 +70,7 @@ else
     dataMN = squeeze(mean(dataDiff, 2)); % band*chan*cond
     dataSE = squeeze(std(dataDiff, 1, 2)/sqrt(size(dataDiff, 2)));
 end
-%%
+%
 XTICKLABEL = {'Negative', 'Neutral', 'Positive'};
 YLABEL = 'Differential ERSP (dB)\nBetween Pain & nonPain';
 
