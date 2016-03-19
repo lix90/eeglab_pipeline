@@ -14,7 +14,7 @@
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'raw');
 outputDir = fullfile(baseDir, 'pre_noRemoveWindows_1hz');
-poolsize = 4;
+poolsize = 8;
 % preprocessing parameters
 ds = 250; % downsampling
 hf = 1; % hi-pass filtering

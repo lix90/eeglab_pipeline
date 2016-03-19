@@ -8,8 +8,7 @@ clear, clc, close all;
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'interp_noRemoveWindows_1hz');
 outputDir = fullfile(baseDir, 'spec_noRemoveWindows_1hz');
-marksDir = fullfile(baseDir, 'marks');
-poolsize = 4;
+
 restLength = 30;
 cut = 2;
 tags = {'rest', 'task1', 'task2', 'task3'};
@@ -17,33 +16,24 @@ marks = {'2', '4', '5', '6'};
 
 eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
+
 % prepare datasets
 if ~exist(inputDir, 'dir'); disp('inputDir does not exist'); return; end
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
+
 tmp = dir(fullfile(inputDir, '*.set'));
 fileName = {tmp.name};
 nFile = numel(fileName);
 ID = get_prefix(fileName, 1);
 ID = unique(ID);
-% Open matlab pool
-% if matlabpool('size') < poolsize
-%     matlabpool('local', poolsize)
-% end
-load(strcat(marksDir, filesep, 'duration.mat'));
-load(strcat(marksDir, filesep, 'chanlocs.mat'));
+
 ALLEEG = []; EEG = [];
-% eeglab
+
 for i = 1:nFile
-    restDuration = duration(1, i);
-    % if restDuration < restLength;
-    %     disp('resting time is too short');
-    %     continue;
-    % end
-    pvafOut = struct();
+
     out = struct();
     name = strcat(ID{i}, '_spec.mat');
-    outNamePvaf = fullfile(outputDir, strcat('pvaf_', name));
-    % outNameChanlocs = fullfile(outputDir, 'chanlocs.mat');
+    if exist(fullfile(inputDir, name), 'file'); continue; end
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % loading
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
@@ -53,6 +43,10 @@ for i = 1:nFile
     latency = round([EEG.event.latency]/EEG.srate);
     if numel(latency)==6
         latency = [0 latency];
+    end
+    restDuration = latency(2)-latency(1)-2;
+    if restDuration<restLength
+        continue
     end
     ilatency = [2 4 5 6 7];
     for itag = 1:numel(tags)
@@ -75,7 +69,7 @@ for i = 1:nFile
         try
             [out.spec, out.freq, ~, ~, ~] = spectopo(EEG.data, 0, EEG.srate, ...
                                                      'plot', 'off');
-            parsave(outName, out);
+            save(outName, 'out');
         catch
             fprintf('error happen in %s of %s\n', tags{itag}, fileName{i});
             continue

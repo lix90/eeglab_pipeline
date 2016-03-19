@@ -8,7 +8,8 @@ outDir = fullfile(baseDir, 'output_noRemoveWindows_1hz');
 nB = 5; % bands
 nSt = 4; % states
 nC = 34; % channels
-nS = 9; % subjects
+subj = [1:9, 11, 13, 14, 17:21];
+nS = numel(subj); % subjects
 
 delta = [1 3];
 theta = [4 7];
@@ -29,10 +30,10 @@ for iBand = 1:nB
     for iState = 1:nSt
         for iSubj = 1:nS
             if iSubj < 10
-                fileName = strcat(tagStates{iState}, '_s0', num2str(iSubj), ...
+                fileName = strcat(tagStates{iState}, '_s0', num2str(subj(iSubj)), ...
                                   '_spec.mat');
             else
-                fileName = strcat(tagStates{iState}, '_s', num2str(iSubj), ...
+                fileName = strcat(tagStates{iState}, '_s', num2str(subj(iSubj)), ...
                                   '_spec.mat');
             end
             fprintf('load %s\n', fileName);

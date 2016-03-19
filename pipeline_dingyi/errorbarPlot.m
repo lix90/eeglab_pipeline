@@ -4,7 +4,7 @@ outDir = '~/Data/dingyi/image_noRemoveWindows_1hz/';
 load(fullfile(inDir, 'dingyi_specdata.mat'));
 
 chan = 'FZ';
-band = 'gamma';
+band = 'beta';
 
 TITLE = sprintf('%s %s', chan, band);
 LINEWIDTH = 4;
