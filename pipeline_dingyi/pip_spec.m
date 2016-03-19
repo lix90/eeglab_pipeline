@@ -7,7 +7,7 @@ clear, clc, close all;
 % set directory
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'interp_noRemoveWindows_1hz');
-outputDir = fullfile(baseDir, 'spec_noRemoveWindows_1hz');
+outputDir = fullfile(baseDir, 'pwelch_noRemoveWindows_1hz');
 
 restLength = 30;
 cut = 2;
@@ -32,7 +32,7 @@ ALLEEG = []; EEG = [];
 for i = 1:nFile
 
     out = struct();
-    name = strcat(ID{i}, '_spec.mat');
+    name = strcat(ID{i}, '_pwelch.mat');
     if exist(fullfile(inputDir, name), 'file'); continue; end
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % loading
@@ -67,8 +67,9 @@ for i = 1:nFile
         [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, itag, 'gui', ...
                                              'off');
         try
-            [out.spec, out.freq, ~, ~, ~] = spectopo(EEG.data, 0, EEG.srate, ...
-                                                     'plot', 'off');
+            % [out.spec, out.freq, ~, ~, ~] = spectopo(EEG.data, 0, EEG.srate, ...
+            %                                          'plot', 'off');
+            out = lix_pwelch(EEG);
             save(outName, 'out');
         catch
             fprintf('error happen in %s of %s\n', tags{itag}, fileName{i});

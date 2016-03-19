@@ -29,6 +29,7 @@ out.Param = {'Window', 'hamming(2^9)',...
              'Overlap', Overlap, ...
              'Fs', Fs};
 nChan = size(EEG.data,1);
+psd = cell(nChan, 1);
 for iChan = 1:nChan
     [p, f] = pwelch(EEG.data(iChan,:), Window, Overlap, Nfft, Fs);
     AbsolutePower = nan(size(FrequencyBands,1),1);
@@ -42,7 +43,11 @@ for iChan = 1:nChan
         out.AbsPower{i,1}(iChan) = AbsolutePower(i);
         out.RelPower{i,1}(iChan) = AbsolutePower(i)/sum(p(f3:f4));
     end
+    psd{iChan} = p;
 end
+
+out.psd = psd;
+out.f = f;
 
 D = out.RelativePower{1};
 T = out.RelativePower{2};
