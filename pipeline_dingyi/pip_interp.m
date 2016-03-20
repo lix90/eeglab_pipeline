@@ -7,7 +7,6 @@ clear, clc, close all;
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'ica');
 outputDir = fullfile(baseDir, 'interp');
-poolsize = 4;
 
 %% -----------------------------------------------------------
 eeglabDir = fileparts(which('eeglab.m'));
