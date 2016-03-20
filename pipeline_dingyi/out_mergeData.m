@@ -1,5 +1,7 @@
+%% merge data
+
 baseDir = '~/Data/dingyi/';
-outputDir = fullfile(baseDir, 'output_noRemoveWindows_1hz');
+outputDir = fullfile(baseDir, 'output');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 tagStates = {'rest', 'task1', 'task2', 'task3'};
 subj = [1:4, 6:9, 11, 13, 14, 17:21];
@@ -7,7 +9,7 @@ nSubj = numel(subj);
 nChan = 34;
 
 %% sample entropy
-samEnDir = fullfile(baseDir, 'samEn_noRemoveWindows_1hz');
+samEnDir = fullfile(baseDir, 'samEn');
 samEn = zeros(numel(tagStates), nChan, nSubj);
 for iState = 1:numel(tagStates)
     for iSubj = 1:nSubj
@@ -30,7 +32,7 @@ sampleEn.data = samEn;
 save(fullfile(outputDir, 'samEn.mat'), 'sampleEn');
 
 %% relative power
-relPowDir = fullfile(baseDir, 'pwelch_noRemoveWindows_1hz');
+relPowDir = fullfile(baseDir, 'pwelch');
 AbsPow = zeros(numel(tagStates), 8, nChan, nSubj);
 RelPow = zeros(numel(tagStates), 8, nChan, nSubj);
 DA = zeros(numel(tagStates), nChan, nSubj);

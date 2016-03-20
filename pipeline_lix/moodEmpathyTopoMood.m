@@ -20,13 +20,12 @@ beta2 = [21, 30, 300, 700];
 % tagChans = {'O1', 'Oz', 'O2'};
 % tagBands = {'theta', 'alpha'};
 % tagChans = {'F5', 'F3', 'Fz', 'F2', 'F4'};
-
-ersp = {STUDY.changrp.erspdata};
+tagChans = {'FC3', 'FCz', 'FC4'};
+tagBands = {'theta', 'alpha', 'beta1', 'beta2'};
 chanlabels = [STUDY.changrp.channels];
 freqs = STUDY.changrp.erspfreqs;
 times = STUDY.changrp.ersptimes;
 nSubj = numel(STUDY.subject);
-[x,y,z] = size(ersp{1});
 nCond = numel(STUDY.design.variable(1).value);
 
 if numel(tagBands)>1

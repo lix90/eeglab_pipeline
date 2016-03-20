@@ -1,19 +1,16 @@
-%% script for computing power
-% 7. remove artifactual ICs (and compute pvaf of left ICs)
-% 8. epoch into 4 epoches
-% 9. frequency analysis (get relative power of rhythm activity)
+%% script for computing psd and sample entropy
 
 clear, clc, close all;
-% set directory
 baseDir = '~/Data/dingyi/';
-inputDir = fullfile(baseDir, 'interp_noRemoveWindows_1hz');
-outputDir = fullfile(baseDir, 'pwelch_noRemoveWindows_1hz');
-
+inputDir = fullfile(baseDir, 'interp');
+pwelchDir = fullfile(baseDir, 'pwelch');
+samEnDir = fullfile(baseDir, 'samEn');
 restLength = 30;
 cut = 2;
 tags = {'rest', 'task1', 'task2', 'task3'};
 marks = {'2', '4', '5', '6'};
 
+%%--------------------------------------------------------
 eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 
@@ -31,8 +28,8 @@ ALLEEG = []; EEG = [];
 
 for i = 1:nFile
 
-    out = struct();
-    name = strcat(ID{i}, '_pwelch.mat');
+    namePwelch = strcat(ID{i}, '_pwelch.mat');
+    nameSamEn = strcat(ID{i}, '_samEn.mat');
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % loading
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
@@ -50,7 +47,10 @@ for i = 1:nFile
     ilatency = [2 4 5 6 7];
     for itag = 1:numel(tags)
         fprintf('spectral analysis of %s\n', tags{itag});
-        outName = fullfile(outputDir, strcat(tags{itag}, '_', name));
+        outNamePwelch = fullfile(pwelchDir, strcat(tags{itag}, '_', ...
+                                                   namePwelch));
+        outNameSamEn = fullfile(samEnDir, strcat(tags{itag}, '_', ...
+                                                 nameSamEn));
         if exist(outName, 'file'); continue; end
         if itag == 1 % rest
             EEG = pop_epoch(EEG, marks(itag), ...
@@ -69,7 +69,11 @@ for i = 1:nFile
             % [out.spec, out.freq, ~, ~, ~] = spectopo(EEG.data, 0, EEG.srate, ...
             %                                          'plot', 'off');
             out = lix_pwelch(EEG);
-            save(outName, 'out');
+            fprintf('computing power spectral density\n');
+            save(outNamePwelch, 'out');
+            out = lix_samEn(EEG);
+            fprintf('computing sample entropy\n');
+            save(outNameSamEn, 'out');
         catch
             fprintf('error happen in %s of %s\n', tags{itag}, fileName{i});
             continue

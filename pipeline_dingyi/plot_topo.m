@@ -78,19 +78,20 @@ print(gcf, '-depsc', '-painters', ...
       strcat(fn, '.eps'));
 
 %% sample entropy
-% SE = squeeze(mean(sampleEn.data,3));
-% SEplot = {squeeze(SE(1,:)), squeeze(SE(2,:));
-%           squeeze(SE(3,:)), squeeze(SE(4,:))};
-% std_chantopo(SEplot, 'chanlocs', chanlocs, ...
-%              'datatype', 'spec', ...
-%              'title', reshape(tagStates, [2,2]));
-% set(gcf, 'name', 'sample entropy');
-% map = colormap('Hot');
-% map = flipud(map);
-% colormap(map);
-% print(gcf, '-djpeg', '-cmyk', '-painters', ...
-%       strcat(fn, '.jpg'));
-% print(gcf, '-depsc', '-painters', ...
-%       strcat(fn, '.eps'));
+fn = fullfile(outDir, sprintf('topoSamEN'));
+SE = squeeze(mean(sampleEn.data,3));
+SEplot = {squeeze(SE(1,:)), squeeze(SE(2,:));
+          squeeze(SE(3,:)), squeeze(SE(4,:))};
+std_chantopo(SEplot, 'chanlocs', chanlocs, ...
+             'datatype', 'spec', ...
+             'title', reshape(tagStates, [2,2]));
+set(gcf, 'name', 'sample entropy');
+map = colormap('Hot');
+map = flipud(map);
+colormap(map);
+print(gcf, '-djpeg', '-cmyk', '-painters', ...
+      strcat(fn, '.jpg'));
+print(gcf, '-depsc', '-painters', ...
+      strcat(fn, '.eps'));
 
 close all

@@ -1,8 +1,9 @@
 clear, clc, close all;
 % set directory
 baseDir = '~/Data/dingyi/';
-inputDir = fullfile(baseDir, 'ica_noRemoveWindows_1hz');
-outputDir = fullfile(baseDir, 'output_noRemoveWindows_1hz');
+inputDir = fullfile(baseDir, 'ica');
+outputDir = fullfile(baseDir, 'output');
+%%------------------------------------------------------------
 eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 % prepare datasets

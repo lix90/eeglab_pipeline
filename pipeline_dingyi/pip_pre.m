@@ -13,33 +13,30 @@
 
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'raw');
-outputDir = fullfile(baseDir, 'pre_noRemoveWindows_1hz');
-poolsize = 8;
-% preprocessing parameters
+outputDir = fullfile(baseDir, 'pre');
+poolsize = 4; % number of cpu for parallel computing
 ds = 250; % downsampling
 hf = 1; % hi-pass filtering
-loc = 'Spherical'; % channel loacation file type 'Spherical' or 'MNI'
 rm = {'HEO', 'VEO', 'Trigger'};
-rthresh = 0.5;
-% onref = 'M1';
-% ref = {'M1', 'M2'};
-% eventfields = {'type', 'latency', 'duration'};
-% timeunit = 0.001; % ms
-    
-% switch loc
-%   case 'MNI'
-%     locFile = 'standard_1005.elc';
-%   case 'Spherical'
+
+%% ----------------------------------------------------------
 locFile = 'standard-10-5-cap385.elp';
-% end 
-eeglabDir = fileparts(which('eeglab.m'));
+if ~exist('eeglab.m', 'file')
+    disp('please first add eeglab into path');
+    return
+else
+    eeglabDir = fileparts(which('eeglab.m'));
+end
 addpath(genpath(eeglabDir));
 locDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BESA', locFile);
 if ispc
     locDir = strrep(locDir, '\', '/');
 end
 
-if ~exist(inputDir, 'dir'); disp('inputDir does not exist\n please reset it'); return; end
+if ~exist(inputDir, 'dir'); 
+    disp('inputDir does not exist\n please reset it'); 
+    return; 
+end
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 tmp = dir(fullfile(inputDir, '*.cnt'));
 fileName = {tmp.name};
@@ -105,26 +102,7 @@ parfor i = 1:nFile
                         arg_noisy, ...
                         arg_burst, ...
                         arg_window);
-    % chanLabels = {EEG.chanlocs.labels};
-    % if isfield(EEGclean.etc, 'clean_channel_mask')
-    %     EEG.etc.badChanLabelsASR = chanLabels(~EEGclean.etc.clean_channel_mask);
-    %     EEG.etc.badChanLabelsASR
-    %     EEG = pop_select(EEG, 'nochannel', find(~EEGclean.etc.clean_channel_mask));
-    % else
-    %     EEG.etc.badChanLabelsASR = {[]};
-    % end
-    % EEG = eeg_checkset(EEG);
-    % EEGclean = [];
-    
-    % % re-reference
-    % if strcmpi(ref, 'average')
-    %     EEG = pop_reref(EEG, []);
-    % elseif iscellstr(ref)
-    %     indRef = ismember({EEG.chanlocs.labels}, ref);
-    %     EEG = pop_reref(EEG, indRef);
-    % end
-    % EEG = eeg_checkset(EEG);
-    % save dataset
+    % save
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = []; 
 end

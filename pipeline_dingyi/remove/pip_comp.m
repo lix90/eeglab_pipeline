@@ -6,8 +6,8 @@
 clear, clc, close all;
 % set directory
 baseDir = '~/Data/dingyi/';
-inputDir = fullfile(baseDir, 'ica_noRemoveWindows_1hz');
-outputDir = fullfile(baseDir, 'interp_noRemoveWindows_1hz');
+inputDir = fullfile(baseDir, 'ica');
+outputDir = fullfile(baseDir, 'interp');
 marksDir = fullfile(baseDir, 'marks');
 poolsize = 4;
 

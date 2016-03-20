@@ -1,16 +1,20 @@
-%% script for preprocessing before ICA
+%% script for ICA
 % * manually check data
 % 6. ica
 % * manually check data
 
 baseDir = '~/Data/dingyi/';
-inputDir = fullfile(baseDir, 'pre_noRemoveWindows_1hz');
-outputDir = fullfile(baseDir, 'ica_noRemoveWindows_1hz');
-poolsize = 8;
+inputDir = fullfile(baseDir, 'pre');
+outputDir = fullfile(baseDir, 'ica');
+poolsize = 4;
+
 eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 
-if ~exist(inputDir, 'dir'); disp('inputDir does not exist\n please reset it'); return; end
+if ~exist(inputDir, 'dir'); 
+    disp('inputDir does not exist\n please reset it'); 
+    return; 
+end
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 tmp = dir(fullfile(inputDir, '*.set'));
 fileName = {tmp.name};
