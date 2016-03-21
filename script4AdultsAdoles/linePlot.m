@@ -5,22 +5,20 @@ theta = [5.5, 7.5];
 alpha = [10.5, 12];
 beta = [18, 20];
 band = 'theta';
-freqs = fre;
-times = tim;
 chans = chanlabels;
 %%
 if strcmp(band, 'theta') || strcmp(band, 'beta')
-    % chan = {'F3', 'Fz', 'F4', ...
-    %         'FC3', 'FCz', 'FC4', ...
-    %         'C3', 'Cz', 'C4', ...
-    %         'CP3', 'CPz', 'CP4'};
-    chan = {'Cz'};
+    chan = {'F3', 'Fz', 'F4', ...
+            'FC3', 'FCz', 'FC4', ...
+            'C3', 'Cz', 'C4', ...
+            'CP3', 'CPz', 'CP4'};
+    % chan = {'Cz'};
 elseif strcmp(band, 'alpha')
     chan = {'PO7', 'PO8', 'PO3', 'PO4', 'POz', ...
             'Oz', 'O1', 'O2'};
 end
-WIDTH = 10;
-HEIGHT = 20;
+WIDTH = 20;
+HEIGHT = 40;
 LINEWIDTH = 2;
 LEGEND = {'high', 'medium', 'neutral'};
 YLIM = [-1, 4];
@@ -28,13 +26,13 @@ for i = 1:numel(chan)
     roi = eval(band);
     TITLE = {sprintf('%s %s of Adults', chan{i}, band),...
              sprintf('%s %s of Adolescents', chan{i}, band)};
-    f = dsearchn(freqs', roi');
+    f = dsearchn(fre', roi');
     c = find(ismember(chans, chan{i}));
     dataSubset = cellfun(@(x) {squeeze(mean(x(f(1):f(2), :, c, :), 1))}, ...
                          data);
-    loYLIM = floor(min(min(cell2mat(dataSubset)))*0.6);
-    hiYLIM = floor(max(max(cell2mat(dataSubset)))*0.6);
-    YLIM = [loYLIM, hiYLIM];
+    % loYLIM = floor(min(min(cell2mat(dataSubset)))*0.4);
+    % hiYLIM = floor(max(max(cell2mat(dataSubset)))*0.4);
+    % YLIM = [loYLIM, hiYLIM];
     %% plotcurve
     std_plotcurve( times, dataSubset, ...
                    'datatype', 'spec', ...
@@ -70,10 +68,11 @@ for i = 1:numel(chan)
     outName = strcat('lineSpec_', band, '_', num2str(roi(1)), '-', ...
                      num2str(roi(2)), '_', chan{i});
     print(gcf, '-djpeg', '-cmyk', '-painters', ...
-          fullfile(indir, 'output', strcat(outName, '.jpg')));
+          fullfile(outdir, strcat(outName, '.jpg')));
     print(gcf, '-depsc', '-painters', ...
           fullfile(outdir, strcat(outName, '.eps')));
-    % save2pdf(fullfile(dir, 'output', strcat(outName, '.pdf')), ...
-    %          gcf, 600);
+    save2pdf(fullfile(outdir, strcat(outName, '.pdf')), ...
+             gcf, 600);
 end
+
 close all;
