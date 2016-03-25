@@ -35,10 +35,7 @@ if numel(tagBands)>1
         t = dsearchn(times', roi(3:4)');
         for iChan = 1:numel(chanlabels)
             tmp = [STUDY.changrp(iChan).erspdata];
-            [d1,d2,d3] = size(tmp{1});
-            d4 = numel(tmp);
-            tmp = reshape(cell2mat(tmp), [d1, d4, d2, d3]);
-            tmp = permute(tmp, [1,3,4,2]);
+            tmp = reshape(cell2mat(tmp), [size(tmp{1}),numel(tmp)]);
             tmp = squeeze(mean(mean(tmp(f(1):f(2), t(1):t(2), :, :),1),2));
             erspSubset(iBand, iChan, :, :) = tmp;
         end
@@ -57,10 +54,7 @@ else
     t = dsearchn(times', roi(3:4)');
     for iChan = 1:numel(chanlabels)
         tmp = [STUDY.changrp(iChan).erspdata];
-        [d1,d2,d3] = size(tmp{1});
-        d4 = numel(tmp);
-        tmp = reshape(cell2mat(tmp), [d1, d4, d2, d3]);
-        tmp = permute(tmp, [1,3,4,2]);
+        tmp = reshape(cell2mat(tmp), [size(tmp{1}),numel(tmp)]);
         tmp = squeeze(mean(mean(tmp(f(1):f(2), t(1):t(2), :, :),1),2));
         erspSubset(iChan, :, :) = tmp;
     end
@@ -75,7 +69,7 @@ end
 %
 XTICKLABEL = {'Negative', 'Neutral', 'Positive'};
 YLABEL = 'Differential ERSP (dB)\nBetween Pain & nonPain';
-CAXIS = [-1.5 1.5];
+CAXIS = [-1 1];
 topoOpt = {'style', 'both', 'electrodes', 'off'};
 % figure('color', 'w', ...
 %        'nextplot', 'add', ...
