@@ -4,11 +4,11 @@ if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 load(fullfile(inputDir, 'painEmpathy_rv15.mat'));
 
 %%
-time = [500 1000];
-freq = [8 13];
+time = [200 800];
+freq = [14 20];
 
 % bands = {'theta', 'alpha', 'alpha1', 'alpha2', 'beta1', 'beta2'};
-chans = {'C3', 'C1', 'Cz', 'C2', 'C4'};
+chans = {'C3', 'Cz', 'C4', 'O1', 'Oz', 'O2'};
 nc = numel(chans);
 
 for iC = 1:nc
