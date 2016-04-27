@@ -3,12 +3,13 @@ clear, clc, close all;
 baseDir = '~/Data/dingyi/';
 inputDir = fullfile(baseDir, 'ica');
 outputDir = fullfile(baseDir, 'interp');
-chanlocsDir = '';
+chanlocsDir = '~/chanlocs.mat';
 
 %% -----------------------------------------------------------
 eeglabDir = fileparts(which('eeglab.m'));
 addpath(genpath(eeglabDir));
 load(chanlocsDir);
+
 % prepare datasets
 if ~exist(inputDir, 'dir'); disp('inputDir does not exist'); return; end
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end

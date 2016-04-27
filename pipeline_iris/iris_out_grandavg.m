@@ -4,14 +4,14 @@
 %% prepare input parameters
 clear, clc
 
-inputDir = '/home/lix/data/Mood-Pain-Empathy/';
-outputDir = fullfile(inputDir, 'image_rv100');
+inputDir = '/home/lix/data/data-iris-out/';
+outputDir = fullfile(inputDir, 'image');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-load(fullfile(inputDir, 'study_rv100.mat'));
+load(fullfile(inputDir,'age_pain.mat'));
 
 %%
 alpha = [8 12 500 1000];
-beta = [13 20 200 800];
+beta = [13 20 200 700];
 times = STUDY.changrp(1).ersptimes;
 freqs = STUDY.changrp(1).erspfreqs;
 chans = [STUDY.changrp.channels];
@@ -48,17 +48,17 @@ end
 %% plot
 figure('color', 'w', 'nextplot', 'add', 'paperunits', 'normalized',...
        'papersize', [1, 0.8]);
-imagepos = [0.08 0.1 0.5 0.4];
+imagepos = [0.08 0.1 0.8 0.8];
 imagesclogy(times, freqs, erspavg);
 set(get(gca, 'ylabel'), 'string', 'ERSP (dB)', 'fontsize', 12);
 set(get(gca, 'xlabel'), 'string', 'Time (ms)', 'fontsize', 12);
 set(gca, 'ydir', 'normal', ...
          'position', imagepos, ...
-         'ytick', [4 8 13 20 30], ...
-         'yticklabel', [4 8 13 20 30], ...
-         'ylim', [4 30], ...
-         'xlim', [-200 1200],...
-         'clim', [-2 2],...
+         'ytick', [4 8 13], ...
+         'yticklabel', [4 8 13], ...
+         'ylim', [4 16], ...
+         'xlim', [-200 1100],...
+         'clim', [-3 3],...
          'tickdir', 'in', ...
          'ticklength', [0.01 0],...
          'box', 'on');
@@ -66,12 +66,12 @@ set(gca, 'ydir', 'normal', ...
 ht = get(gca, 'title');
 set(ht, 'string', 'Grand average of ERSP across central electrodes');
 set(ht, 'position', [600, 32, 1], 'fontsize', 14);
-alphaPos = [400 9 500 4];
+alphaPos = [400 8 600 5];
 rectangle('position', alphaPos);
-betaPos = [200 14 500 11];
-rectangle('position', betaPos);
+thetaPos = [400 4.1 400 3];
+rectangle('position', thetaPos);
 cbPos = [imagepos(3)+imagepos(1)+0.02, imagepos(2), 0.01, 0.1];
-hcbar = colorbar('position', cbPos, 'ytick', [-2 0 2], 'yticklabel', [-2 0 2]);
+hcbar = colorbar('position', cbPos, 'ytick', [-3 0 3], 'yticklabel', [-3 0 3]);
 
 % set(hleg, 'position', legPos);
 % if ~ishold; hold on; end

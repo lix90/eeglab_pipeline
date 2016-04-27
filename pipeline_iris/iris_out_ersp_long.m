@@ -1,12 +1,13 @@
 clear, clc, close all
-inputDir = '~/data/Mood-Pain-Empathy/';
-outputDir = fullfile(inputDir, 'csvERSP_rv15');
+inputDir = '~/data/data-iris-out/';
+outputDir = fullfile(inputDir, 'csvERSP');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-load(fullfile(inputDir, 'study_rv15.mat'))
+load(fullfile(inputDir, 'age_pain.mat'))
 
-alpha = [9, 13];
-beta = [14, 25];
-time = [500 1000];
+theta = [4 7];
+% alpha = [9, 13];
+% beta = [14, 25];
+time = [0 400];
 
 %% start
 times = STUDY.changrp(1).ersptimes;
@@ -14,20 +15,28 @@ nt = length(times);
 freqs = STUDY.changrp(1).erspfreqs;
 nf = length(freqs);
 subjs = STUDY.subject';
-exclud = {'chenxu', 'chenyanqiu', 'dairubiao', 'xujin', 'pujianyong'};
-subjs = subjs(~ismember(subjs, exclud));
+% exclud = {'chenxu', 'chenyanqiu', 'dairubiao', 'xujin', 'pujianyong'};
+% subjs = subjs(~ismember(subjs, exclud));
 ns = numel(subjs);
 chanlabels = [STUDY.changrp.channels];
 
-bands = {'alpha', 'beta'};
+% bands = {'alpha'};
+% bands = {'beta'};
+bands = {'theta'}
 % chans = {'C3', 'Cz', 'C4', 'O1', 'Oz', 'O2'};
-chans = {'F3', 'F4'};
+% chans = {'F5', 'F3', 'F1', 'Fz', 'F2', 'F4', 'F6', 'AF3', 'AF4'};
+chans = {'FC5', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4','FC6'};
+% chans = {'C5', 'C3', 'C1', 'Cz', 'C2', 'C4', 'C6'};
+% chans = {'CP5', 'CP3', 'CP1', 'CPz', 'CP2', 'CP4', 'CP6'};
+% chans = {'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6'};
+% chans = {'PO3', 'POz', 'PO4'};
+% chans = {'O1', 'Oz', 'O2'};
 nc = numel(chans);
 nb = numel(bands);
 out.id = [];
 out.chan = [];
 out.band = [];
-out.mood = [];
+out.age = [];
 out.pain = [];
 out.ersp = [];
 
@@ -51,7 +60,7 @@ for iF = 1:nb
             out.chan = [out.chan; repmat(chans(ic), [nv1*nv2,1])];
             tmpersp = STUDY.changrp(ci).erspdata;
             for iv1 = 1:nv1
-                out.mood = [out.mood; repmat(condition1(iv1), [nv2, 1])];
+                out.age = [out.age; repmat(condition1(iv1), [nv2, 1])];
                 for iv2 = 1:nv2
                     out.pain = [out.pain; condition2(iv2)];
                     tmp2 = tmpersp{iv1, iv2};
@@ -64,7 +73,8 @@ for iF = 1:nb
             end
         end
     end
-    filename = sprintf('longersp_%s_t%i-%i.csv', ...
+    filename = sprintf('longersp_%s_%s_t%i-%i.csv', ...
+                       cellstrcat(bands, '-'), ...
                        cellstrcat(chans, '-'), ...
                        min(t(:)), max(t(:)));
     outFile = fullfile(outputDir, filename);

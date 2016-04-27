@@ -43,9 +43,11 @@ for i = 1:nFile
     eegdata = EEG.data;
     nbchan = size(EEG.data, 1);
     EEG.data = zeros(nbchan, trialLength, trials);
+
     for j = 1:trials
         EEG.data(:,:,j) = eegdata(:,((j-1)*trialLength+1):j*trialLength);
     end
+
     EEG.pnts = trialLength;
     EEG = eeg_checkset(EEG);
 

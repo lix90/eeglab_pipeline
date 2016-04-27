@@ -9,8 +9,8 @@ times = STUDY.changrp(1).ersptimes;
 nt = length(times);
 freqs = STUDY.changrp(1).erspfreqs;
 nf = length(freqs);
-subjs = STUDY.subject';
-ns = numel(subjs);
+% subjs = STUDY.subject';
+ns = size(STUDY.changrp(1).erspdata{1,1},3);
 chans = [STUDY.changrp.channels];
 nc = numel(chans);
 

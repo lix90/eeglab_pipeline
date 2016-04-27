@@ -13,6 +13,7 @@ marks = {'Neg_noPain', 'Neg_Pain', ...
 %% setting for CBRanalysis
 par.CBRpar.timeintervals.ref_int = [-1000 0];
 par.CRBpar.timeintervals.test_int= [0 2000];
+par.CRBpar.spectrapar.Nfft = 2^11;
 par.savepar.mat=1;
 par.savepar.matpar.filepath = outputDir;
 par.savepar.matpar.includeavespectra = 1;
