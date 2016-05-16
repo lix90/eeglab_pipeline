@@ -3,24 +3,24 @@
 %  create study
 %%%%%% directory settings
 baseDir = '~/Data/yang_select';
-inputDir = fullfile(baseDir, 'whole_back');
-outputDir = fullfile(baseDir, 'study');
+inputDir = fullfile(baseDir, 'spherical');
+outputDir = inputDir;;
 
 %%%%%% study parameters
-nameStudy = 'yang_pain_empathy_back_whole.study';
+nameStudy = 'painEmpathy_rv20.study';
 nameTask = 'pain empathy';
 noteStudy = '1Hz-average';
-dipselect = 0.15;
+dipselect = 0.2;
 inbrain = 'on';
 
 %%%%%% study design parameters
 V = { 'Neg_noPain', 'Neg_Pain', ...
       'Neu_noPain', 'Neu_Pain', 'Pos_Pain', 'Pos_noPain',};
-S = {'caihuayu', 'chenfang', 'chenxu', 'dengguirong', 'dingsanpeng', ...
-    'huniping', 'jiaming', 'liangbaishun', 'liangnian', 'liushuang', ...
-    'liuyanan', 'longfan', 'mazhen', 'wangdan', 'wangjiangbo', ...
-     'xujin', 'yuanbingtao', 'yuanjianmei', 'yueliang', 'zhangting', ...
-    'zhangyandi', 'zhoujiahua'};
+% S = {'caihuayu', 'chenfang', 'chenxu', 'dengguirong', 'dingsanpeng', ...
+%     'huniping', 'jiaming', 'liangbaishun', 'liangnian', 'liushuang', ...
+%     'liuyanan', 'longfan', 'mazhen', 'wangdan', 'wangjiangbo', ...
+%      'xujin', 'yuanbingtao', 'yuanjianmei', 'yueliang', 'zhangting', ...
+%     'zhangyandi', 'zhoujiahua'};
 
 %%%%%%% prepare data
 if ~exist(inputDir, 'dir'); disp('inputDir does not exist\n please reset it'); return; end

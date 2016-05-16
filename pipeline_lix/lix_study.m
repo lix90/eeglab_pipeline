@@ -1,17 +1,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % set parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-baseDir = '~/Data/iris/';
-inputDir = fullfile(baseDir, 'single_laplac');
+baseDir = '~/Data/moodPain_final/';
+inputDir = fullfile(baseDir, 'single_rv100');
 outputDir = inputDir;
 
 nvar = 2; % number of variables
-nameStudy = 'age_pain_empathy_laplac.study';
+nameStudy = 'painEmpathy_rv100.study';
 nameTask = 'pain empathy';
 noteStudy = '1Hz-average';
 dipselect = [];
 inbrain = [];
-V1 = {'Adult', 'Child', 'Old'};
+V1 = {'Neg', 'Neu', 'Pos'};
 V2 = {'noPain', 'Pain'};
 tmp = dir(fullfile(inputDir, '*.set'));
 setname = natsort({tmp.name});

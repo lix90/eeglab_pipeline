@@ -34,7 +34,7 @@ if ~isempty(rightRESP)
     n = EEG.trials;
     rightresp = zeros(1,n);
     for i = 1:n
-        test = ismember(EEG.epoch(1,i).eventtype, rightevent);
+        test = ismember(EEG.epoch(1,i).eventtype, rightRESP);
         if any(test)
             rightresp(i) = 1;
         end

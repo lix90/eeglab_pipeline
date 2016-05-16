@@ -1,13 +1,13 @@
 clear, clc, close all;
 % set directory
-baseDir = '~/Data/iris/';
-inputDir = fullfile(baseDir, 'spherical');
-outputDir = fullfile(baseDir, 'spherical_rv20');
+baseDir = '~/Data/moodPain_final/';
+inputDir = fullfile(baseDir, 'spherical_rv15');
+outputDir = fullfile(baseDir, 'spherical_rv100');
 % dipfit parameters
 RV = 1;
 MODEL = 'Spherical'; % 'MNI' or 'Spherical'
 poolsize = 8;
-rv = 20;
+rv = 100;
 
 %% channel location files
 locFile = 'standard-10-5-cap385.elp';
@@ -43,7 +43,7 @@ ID = unique(ID);
 
 % Open matlab pool
 if matlabpool('size') ~= poolsize
-    matlabpool('local', poolsize);
+    matlabpool('local', poolsize)
 end
 
 parfor i = 1:nFile
@@ -54,7 +54,7 @@ parfor i = 1:nFile
     if exist(outName, 'file'); warning('files already exist'); continue; end
     fprintf('Loading (%i/%i %s)\n', i, nFile, fileName{i});
     % load dataset
-    % ALLEEG = [];
+    ALLEEG = [];
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
     EEG = eeg_checkset(EEG);
     nbcomp = size(EEG.icaweights, 1);
@@ -75,7 +75,7 @@ parfor i = 1:nFile
     %                     'plotopt', {'normlen' 'on'});
     % EEG = eeg_checkset(EEG);
     % identify outside dipoles and dipoles rv above 20%
-    selectedICs = eeg_dipselect(EEG, rv, 'inbrain', 1);
+    selectedICs = eeg_dipselect(EEG, 100, 'inbrain', 1);
     goodICs = zeros(1, nbcomp);
     goodICs(selectedICs) = 1;
     EEG.reject.gcompreject = ~goodICs;

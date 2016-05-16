@@ -42,7 +42,7 @@ for i = 1:nFile
     EEG.times = EEG.times(1, 1:trialLength);
     eegdata = EEG.data;
     nbchan = size(EEG.data, 1);
-    EEG.data = zeros(nbchan, trialLength, trials);
+    EEG.data = zeros(nbchan, trialLength, trials);k
     for j = 1:trials
         EEG.data(:,:,j) = eegdata(:,((j-1)*trialLength+1):j*trialLength);
     end

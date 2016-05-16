@@ -1,12 +1,12 @@
 clear, clc, close all;
 % set directory
 baseDir = '~/Data/yang_select';
-inputDir = fullfile(baseDir, 'ica');
-outputDir = fullfile(baseDir, 'spherical');
+inputDir = fullfile(baseDir, 'spherical_rv15');
+outputDir = fullfile(baseDir, 'spherical_rv20');
 % dipfit parameters
 RV = 1;
 MODEL = 'Spherical'; % 'MNI' or 'Spherical'
-poolsize = 4;
+poolsize = 8;
 
 %% channel location files
 locFile = 'standard-10-5-cap385.elp';
@@ -18,10 +18,10 @@ mrifileDir = which(mrifile);
 chanfileDir = which(chanfile);
 locDir = which(locFile);
 if ispc
-   hdmfileDir = strrep(hdmfileDir, '\', '/');
-   mrifileDir = strrep(mrifileDir, '\', '/');
-   chanfileDir = strrep(chanfileDir, '\', '/');
-   locDir = strrep(locDir, '\', '/');
+    hdmfileDir = strrep(hdmfileDir, '\', '/');
+    mrifileDir = strrep(mrifileDir, '\', '/');
+    chanfileDir = strrep(chanfileDir, '\', '/');
+    locDir = strrep(locDir, '\', '/');
 end
 % TRANS = [ 13.4299, 0.746361, -0.654923, 0.000878113, -0.0818352, ...
 %           0.0023747, 0.852832, 0.941595, 0.85887 ];
@@ -80,7 +80,7 @@ parfor i = 1:nFile
                         'plotopt', {'normlen' 'on'});
     EEG = eeg_checkset(EEG);
     % identify outside dipoles and dipoles rv above 15%
-    selectedICs = eeg_dipselect(EEG, 15, 'inbrain', 1);
+    selectedICs = eeg_dipselect(EEG, 20, 'inbrain', 1);
     % dipout = dipfit_reject(EEG.dipfit.model, 0.15);
     % rmRv = [];
     % for ii = 1:nbcomp

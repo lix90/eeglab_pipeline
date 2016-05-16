@@ -26,7 +26,7 @@ ID = get_prefix(fileName, 1);
 ID = natsort(unique(ID));
 
 %%%%%% Open matlab pool
-lix_matpool(4);
+lix_matpool(8);
 
 parfor i = 1:nFile
 

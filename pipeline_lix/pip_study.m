@@ -1,10 +1,10 @@
 %% pipepline: create study
 
-baseDir = '~/Data/yang_select/';
-inputDir = fullfile(baseDir, 'laplac');
+baseDir = '~/Data/moodPain_final/';
+inputDir = fullfile(baseDir, 'spherical');
 outputDir = inputDir;
 
-nameStudy = 'yang_laplac.study';
+nameStudy = 'painEmpathy_final.study';
 nameTask = 'pain empathy';
 noteStudy = '1Hz-average';
 dipselect = [];

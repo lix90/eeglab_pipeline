@@ -18,10 +18,10 @@ subjID = get_prefix(fileName, 1);
 subjID = natsort(unique(subjID));
 
 output = struct();
-output.subjID = subjID';
-output.chanNum = NaN(numel(subjID),1);
-output.icNum = NaN(numel(subjID),1);
-%output.pvaf = NaN(numel(subjID),1);
+output.id = subjID';
+output.Nchan = NaN(numel(subjID),1);
+output.Nic = NaN(numel(subjID),1);
+output.pvaf = NaN(numel(subjID),1);
 
 %% start loop
 for i = 1:nFile
@@ -33,7 +33,7 @@ for i = 1:nFile
     %% get trialName
     events = {EEG.event.type};
     for j = 1:numel(trialName)
-       output.(trialName{j})(i,1) = numel(find(ismember(events, trialName{j})));
+        output.(trialName{j})(i,1) = numel(find(ismember(events, trialName{j})));
     end
     output.chanNum(i,1) = EEG.nbchan;
     output.icNum(i,1) = size(EEG.icaact, 1);
