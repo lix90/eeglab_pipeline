@@ -2,24 +2,26 @@
 % alpha: 10.5-12Hz, 850-950ms
 % beta: 18-20Hz, 500-600ms
 %% prepare input parameters
-clear, clc
+% clear, clc
 
-indir = '/home/lix/data/Mood-Pain-Empathy/';
-outdir = fullfile(indir, 'image');
-if ~exist(outdir, 'dir'); mkdir(outdir); end
-load(fullfile(indir, 'erspMoodEmpathy.mat'));
+% indir = '/home/lix/data/Mood-Pain-Empathy/';
+% outdir = fullfile(indir, 'image');
+% if ~exist(outdir, 'dir'); mkdir(outdir); end
+% load(fullfile(indir, 'painEmpathy_final.mat'));
 
 %%
-theta = [4, 7, 200, 600];
-alpha = [8, 12, 400, 800];
-beta1 = [13, 20, 300, 700];
-beta2 = [21, 30, 300, 700];
-% tagChans = {'C3', 'C1', 'Cz', 'C2', 'C4'};
-% tagBands = {'alpha', 'beta1', 'beta2'};
+time = [300, 700];
+theta = [4, 7, time];
+alpha = [8, 12, time];
+beta1 = [13, 20, time];
+beta2 = [21, 30, time];
+tagChans = {'C3', 'Cz', 'C4'};
+tagBands = {'theta', 'alpha', 'beta1', 'beta2'};
 % tagBands = {'alpha'};
 % tagChans = {'O1', 'Oz', 'O2'};
-tagBands = {'theta', 'alpha'};
-tagChans = {'F5', 'F3', 'Fz', 'F2', 'F4'};
+% tagBands = {'theta', 'alpha'};
+% tagChans = {'F5', 'F3', 'Fz', 'F2', 'F4'};
+% tagChans = {'FC3', 'FCz', 'FC4'};
 
 ersp = {STUDY.changrp.erspdata};
 chanlabels = [STUDY.changrp.channels];
@@ -37,8 +39,11 @@ if numel(tagBands)>1
         t = dsearchn(times', roi(3:4)');
         for iChan = 1:numel(tagChans)
             indChan = find(ismember(chanlabels, tagChans(iChan)));
-            tmp = [STUDY.changrp(indChan).erspdata];
-            tmp = reshape(cell2mat(tmp), [size(tmp{1}),numel(tmp)]);
+            tmp = STUDY.changrp(indChan).erspdata;
+            [d1,d2,d3] = size(tmp{1});
+            d4 = numel(tmp);
+            tmp = reshape(cell2mat(tmp), [d1, d4, d2, d3]);
+            tmp = permute(tmp, [1,3,4,2]);
             tmp = squeeze(mean(mean(tmp(f(1):f(2), t(1):t(2), :, :),1),2));
             erspSubset(iBand, iChan, :, :) = tmp;
         end
@@ -58,13 +63,16 @@ else
     for iChan = 1:numel(tagChans)
         indChan = find(ismember(chanlabels, tagChans(iChan)));
         tmp = [STUDY.changrp(indChan).erspdata];
-        tmp = reshape(cell2mat(tmp), [size(tmp{1}),numel(tmp)]);
+        [d1,d2,d3] = size(tmp{1});
+        d4 = numel(tmp);
+        tmp = reshape(cell2mat(tmp), [d1, d4, d2, d3]);
+        tmp = permute(tmp, [1,3,4,2]);
         tmp = squeeze(mean(mean(tmp(f(1):f(2), t(1):t(2), :, :),1),2));
         erspSubset(iChan, :, :) = tmp;
     end
-    neg = erspSubset(:,:,1)-erspSubset(:,:,2);
-    neu = erspSubset(:,:,3)-erspSubset(:,:,4);
-    pos = erspSubset(:,:,5)-erspSubset(:,:,6);
+    neg = erspSubset(:,:,2)-erspSubset(:,:,1);
+    neu = erspSubset(:,:,4)-erspSubset(:,:,3);
+    pos = erspSubset(:,:,6)-erspSubset(:,:,5);
     dataDiff = {neg, neu, pos}; % band * chan * sub
     dataDiff = reshape(cell2mat(dataDiff), [size(dataDiff{1}), numel(dataDiff)]);
     dataMN = squeeze(mean(dataDiff, 2)); % band*chan*cond
@@ -90,7 +98,7 @@ if numel(tagBands)>1
         set(gca, 'XTickLabel', XTICKLABEL);
         title(TITLE);
         LEGEND = tagChans;
-        ylabel(YLABEL);
+        % ylabel(YLABEL);
         legend(gca, 'string', LEGEND, 'Location', 'SouthEastOutside');
     end
 else
@@ -101,16 +109,16 @@ else
     set(hbar, 'EdgeColor', 'w');
     set(herr, 'LineWidth', 1, 'Color', 'k');
     set(gca, 'XTickLabel', XTICKLABEL);
-    ylabel(YLABEL)
+    % ylabel(YLABEL)
     title(TITLE);
     LEGEND = tagChans;
     legend(gca, 'string', LEGEND, 'Location', 'SouthEastOutside');
 end
 % save image
-outName = strcat('errBarSpec_', ...
-                 cellstrcat(tagChans, '-'));
-print(gcf, '-djpeg', '-cmyk', '-painters', ...
-      fullfile(outdir, strcat(outName, '.jpg')));
-print(gcf, '-depsc', '-painters', ...
-      fullfile(outdir, strcat(outName, '.eps')));
-close all
+% outName = sprintf('errBarSpec_%s_%i-%i', ...
+%                   cellstrcat(tagChans, '-'), time(1), time(2));
+% print(gcf, '-djpeg', '-cmyk', '-painters', ...
+%       fullfile(outdir, strcat(outName, '.jpg')));
+% print(gcf, '-depsc', '-painters', ...
+%       fullfile(outdir, strcat(outName, '.eps')));
+% close all
