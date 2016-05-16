@@ -48,7 +48,7 @@ end
 %% plot
 figure('color', 'w', 'nextplot', 'add', 'paperunits', 'normalized',...
        'papersize', [1, 0.8]);
-imagepos = [0.08 0.1 0.8 0.8];
+imagepos = [0.08 0.1 0.8 0.6];
 imagesclogy(times, freqs, erspavg);
 set(get(gca, 'ylabel'), 'string', 'ERSP (dB)', 'fontsize', 12);
 set(get(gca, 'xlabel'), 'string', 'Time (ms)', 'fontsize', 12);
@@ -63,12 +63,13 @@ set(gca, 'ydir', 'normal', ...
          'ticklength', [0.01 0],...
          'box', 'on');
 % add title
-ht = get(gca, 'title');
-set(ht, 'string', 'Grand average of ERSP across central electrodes');
-set(ht, 'position', [600, 32, 1], 'fontsize', 14);
-alphaPos = [400 8 600 5];
+% ht = get(gca, 'title');
+% set(ht, 'string', 'Grand average of ERSP across central electrodes');
+% set(ht, 'position', [600, 32, 1], 'fontsize', 14);
+title('Grand Average Image')
+alphaPos = [400 9 600 4];
 rectangle('position', alphaPos);
-thetaPos = [400 4.1 400 3];
+thetaPos = [400 5 400 2];
 rectangle('position', thetaPos);
 cbPos = [imagepos(3)+imagepos(1)+0.02, imagepos(2), 0.01, 0.1];
 hcbar = colorbar('position', cbPos, 'ytick', [-3 0 3], 'yticklabel', [-3 0 3]);

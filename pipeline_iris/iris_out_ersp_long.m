@@ -1,13 +1,16 @@
 clear, clc, close all
 inputDir = '~/data/data-iris-out/';
-outputDir = fullfile(inputDir, 'csvERSP');
+outputDir = fullfile(inputDir, 'csvERSP_sub');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 load(fullfile(inputDir, 'age_pain.mat'))
 
 theta = [4 7];
-% alpha = [9, 13];
+theta1 = [4 6];
+theta2 = [6 8];
+alpha1 = [8, 10];
+alpha2 = [10, 13];
 % beta = [14, 25];
-time = [0 400];
+time = [400 600];
 
 %% start
 times = STUDY.changrp(1).ersptimes;
@@ -20,9 +23,11 @@ subjs = STUDY.subject';
 ns = numel(subjs);
 chanlabels = [STUDY.changrp.channels];
 
-% bands = {'alpha'};
+% bands = {'alpha2'};
+% bands = {'alpha2'};
 % bands = {'beta'};
-bands = {'theta'}
+% bands = {'theta1'};
+bands = {'theta1'};
 % chans = {'C3', 'Cz', 'C4', 'O1', 'Oz', 'O2'};
 % chans = {'F5', 'F3', 'F1', 'Fz', 'F2', 'F4', 'F6', 'AF3', 'AF4'};
 chans = {'FC5', 'FC3', 'FC1', 'FCz', 'FC2', 'FC4','FC6'};
