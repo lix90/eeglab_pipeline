@@ -1,5 +1,3 @@
-function zhu_ica
-
 %%%%%% set directory
 baseDir = 'E:\Thelma\zhu';
 inputDir = fullfile(baseDir, 'pre');

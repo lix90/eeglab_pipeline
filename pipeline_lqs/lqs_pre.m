@@ -106,6 +106,5 @@ for i = 1:nFile
     % save dataset
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = [];
-
 end
 

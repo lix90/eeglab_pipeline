@@ -1,10 +1,10 @@
 clear, clc, close all
 inputDir = '~/data/Mood-Pain-Empathy/';
-outputDir = fullfile(inputDir, 'csvERSP_rv15');
+outputDir = fullfile(inputDir, 'csvERSP_rv15_new');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 load(fullfile(inputDir, 'study_rv15.mat'))
 
-alpha = [9, 13];
+alpha = [8, 13];
 beta = [14, 25];
 time = [500 1000];
 
@@ -19,9 +19,9 @@ subjs = subjs(~ismember(subjs, exclud));
 ns = numel(subjs);
 chanlabels = [STUDY.changrp.channels];
 
-bands = {'alpha', 'beta'};
-% chans = {'C3', 'Cz', 'C4', 'O1', 'Oz', 'O2'};
-chans = {'F3', 'F4'};
+bands = {'alpha'};
+chans = {'C3', 'Cz', 'C4', 'O1', 'Oz', 'O2'};
+% chans = {'F3', 'F4'};
 nc = numel(chans);
 nb = numel(bands);
 out.id = [];
@@ -64,8 +64,9 @@ for iF = 1:nb
             end
         end
     end
-    filename = sprintf('longersp_%s_t%i-%i.csv', ...
+    filename = sprintf('longersp_%s_f%i-%i_t%i-%i.csv', ...
                        cellstrcat(chans, '-'), ...
+                       min(f(:)), max(f(:)),...
                        min(t(:)), max(t(:)));
     outFile = fullfile(outputDir, filename);
     struct2csv(out, outFile);
