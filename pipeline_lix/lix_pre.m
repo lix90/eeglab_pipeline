@@ -1,27 +1,21 @@
 clear, clc, close all
-baseDir = '~/Data/moodPain_40hz/';
+baseDir = '';
 inputDir = fullfile(baseDir, 'merge');
 outputDir = fullfile(baseDir, 'pre');
 
 DS = 250; % downsampling
 hiPass = 1;
-loPass = 40;
 MODEL = 'Spherical';
 UNUSED = {'VEO', 'HEOR', 'TP9', 'TP10'};
 CHANTHRESH = 0.5;
 poolsize = 4;
 REF = 'average';
 ONREF = 'FCz';
-CHANGE = true; % change event name
 EPOCHTIME = [-1, 2]; % epoch time range
-FROM = {'S 11', 'S 12', ...
-        'S 21', 'S 22', ...
-        'S 31', 'S 32'};
-TO = {'Pos_Pain', 'Pos_noPain', ...
-      'Neg_noPain', 'Neg_Pain', ...
-      'Neu_noPain', 'Neu_Pain' };
-STIM = FROM;
-RESP = {'S  7', 'S  8', 'S  9'};
+MARKS = {'yes_neg_small', 'yes_neg_big', ...
+        'yes_pos_small', 'yes_pos_big',...
+        'no_neg_small', 'no_neg_big',...
+        'no_pos_small', 'no_pos_big'};
 
 %% channel location files
 switch MODEL
@@ -49,14 +43,13 @@ ID = natsort(unique(ID));
 eeglab_opt;
 for i = 1:nFile
 
-    %% prepare output filename
+    % prepare output filename
     name = strcat(ID{i}, '_pre.set');
     outName = fullfile(outputDir, name);
-
-    %% check if file exists
+    % check if file exists
     if exist(outName, 'file'); warning('files already exist'); continue; end
 
-    %% load dataset
+    % load dataset
     EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
     EEG = eeg_checkset(EEG);
 
@@ -77,26 +70,20 @@ for i = 1:nFile
     chanlocs = pop_chancenter(EEG.chanlocs, []);
     EEG.chanlocs = chanlocs;
     EEG = eeg_checkset(EEG);
-
-    %% remove nonbrain channels
+    % remove nonbrain channels
     chanLabels = {EEG.chanlocs.labels};
     idx = find(ismember(chanLabels, UNUSED));
     EEG = pop_select(EEG,'nochannel', idx);
     EEG = eeg_checkset( EEG );
     EEG.etc.origchalocs = EEG.chanlocs;
-    
-    %% downsampling to 250 Hz
+    % downsampling to 250 Hz
     EEG = pop_resample(EEG, DS);
     EEG = eeg_checkset(EEG);
-
-    %% high pass filtering: 
+    % high pass filtering: 
     % 1 Hz for better ica results, but not proper for erp study
     EEG = pop_eegfiltnew(EEG, hiPass, 0);
     EEG = eeg_checkset(EEG);
-    EEG = pop_eegfiltnew(EEG, 0, loPass);
-    EEG = eeg_checkset(EEG);
-
-    %% remove bad channels
+    % remove bad channels
     arg_flatline = 5; % default is 5
     arg_highpass = 'off';
     arg_channel = CHANTHRESH; % default is 0.85
@@ -110,25 +97,13 @@ for i = 1:nFile
                         arg_noisy, ...
                         arg_burst, ...
                         arg_window);
-
-    %% re-reference
+    % re-reference
     EEG = pop_reref(EEG, []);
     EEG = eeg_checkset(EEG);
-
-    
-    %% change events
-    EEG = readable_event(EEG, RESP, STIM, CHANGE, FROM, TO);
-
-    %% epoch
-    if CHANGE
-        MARKS = unique(TO);
-    else
-        MARKS = unique(FROM);
-    end
+    % epoching
     EEG = pop_epoch(EEG, MARKS, EPOCHTIME);
     EEG = eeg_checkset(EEG);
-
-    %% save dataset
+    % save dataset
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = [];
 

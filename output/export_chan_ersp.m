@@ -5,10 +5,10 @@
 chanLabels = {'F4'}; % channel labels of interest
 timeRange = [200 600]; % time range of erp component
 freqRange = [4, 7];
-outDir = '~/Desktop/output/'; % output directory
-design = 'repeated'; % repeated or mixed
-g1 = {};
-g2 = {};
+outDir = ''; % output directory
+design = 'mixed'; % repeated or mixed
+g1 = {''};
+g2 = {''};
 
 %% compute ersp
 if ~exist(outDir, 'dir'); mkdir(outDir); end
@@ -16,7 +16,7 @@ if ~exist(outDir, 'dir'); mkdir(outDir); end
     std_erspplot(STUDY, ALLEEG, ...
                  'plotsubjects', 'off', 'channels', chanLabels,...
                  'plotmode', 'none',...
-                 'subbaseline', 'on');
+                 'subbaseline', 'off');
 subj = STUDY.subject;
 var1 = STUDY.design(1).variable(1).value;
 var2 = STUDY.design(1).variable(2).value;
@@ -28,12 +28,10 @@ t = dsearchn(erspTimes', timeRange');
 f = dsearchn(erspFreqs', freqRange');
 tStr = strcat('t', num2str(timeRange(1)), '-', num2str(timeRange(2)));
 fStr = strcat('f', num2str(freqRange(1)), '-', num2str(freqRange(2)));
-if nChan>1
-    cStr = cellstrcat(chanLabels, '-');
-elseif nChan==1
-    cStr = char(chanLabels);
+cStr = cellstrcat(chanLabels, '-');
+if numel(chanLabels)~=1
+    erspData = cellfun(@(x) {squeeze(mean(x, 3))}, erspData);
 end
-
 % -------------------------------------------------
 % export ersp
 if strcmp(design, 'repeated')
