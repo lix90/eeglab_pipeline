@@ -2,11 +2,11 @@
 % set parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 baseDir = '~/Data/moodPain_final/';
-inputDir = fullfile(baseDir, 'single_rv100');
+inputDir = fullfile(baseDir, 'single_rv15_2_csd');
 outputDir = inputDir;
 
 nvar = 2; % number of variables
-nameStudy = 'painEmpathy_rv100.study';
+nameStudy = 'painEmpathy_rv15_2_csd.study';
 nameTask = 'pain empathy';
 noteStudy = '1Hz-average';
 dipselect = [];

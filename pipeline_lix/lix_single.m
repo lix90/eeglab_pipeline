@@ -5,8 +5,8 @@ clear, clc, close all
 
 % set directory
 baseDir = '~/Data/moodPain_final/';
-inputDir = fullfile(baseDir, 'spherical_rv100');
-outputDir = fullfile(baseDir, 'single_rv100');
+inputDir = fullfile(baseDir, 'interp_rv15_2');
+outputDir = fullfile(baseDir, 'single_rv15_2_csd');
 poolsize = 8;
 Events = {'Pos_Pain', 'Pos_noPain', ...
           'Neg_noPain', 'Neg_Pain', ...
@@ -35,6 +35,15 @@ for i = 1:nFile
     EEG = eeg_checkset(EEG);
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'gui','off', 'overwrite', ...
                                          'on');
+    %% csd
+    disp('laplacian');
+    laplac = eeg_laplac(EEG, 1);
+    laplac = reshape(laplac, [size(EEG.data)]);
+    EEG.data = laplac;
+    EEG = eeg_checkset(EEG);
+    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'gui','off', 'overwrite', ...
+                                         'on');
+    
     for j = 1:numel(Events)
         name = strcat(id{i}, '_', Events{j});
         outName = fullfile(outputDir, name);
