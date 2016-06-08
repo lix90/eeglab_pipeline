@@ -1,14 +1,14 @@
 clear, clc, close all
-baseDir = '';
+baseDir = '~/Data/lqs_gambling/';
 inputDir = fullfile(baseDir, 'merge');
-outputDir = fullfile(baseDir, 'pre');
+outputDir = fullfile(baseDir, 'pre2');
 
 DS = 250; % downsampling
 hiPass = 1;
 MODEL = 'Spherical';
-UNUSED = {'VEO', 'HEOR', 'TP9', 'TP10'};
+UNUSED = {'VEO', 'HEOR', 'VEOG', 'HEOG',  'TP9', 'TP10'};
 CHANTHRESH = 0.5;
-poolsize = 4;
+poolsize = 2;
 REF = 'average';
 ONREF = 'FCz';
 EPOCHTIME = [-1, 2]; % epoch time range
@@ -32,15 +32,19 @@ if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 tmp = dir(fullfile(inputDir, '*.set'));
 fileName = natsort({tmp.name});
 nFile = numel(fileName);
-ID = get_prefix(fileName, 1);
+ID = get_prefix(fileName, 2);
 ID = natsort(unique(ID));
 
 %% Open matlab pool
-% if matlabpool('size') ~= poolsize
-%     matlabpool('local', poolsize)
+% if matlabpool('size') == 0
+%     matlabpool('local', poolsize);
+% elseif matlabpool('size') ~= poolsize
+%     matlabpool('close')
+%     matlabpool('local', poolsize);
 % end
 
 eeglab_opt;
+ALLEEG = []; EEG = []; CURRENTSET = [];
 for i = 1:nFile
 
     % prepare output filename
@@ -90,19 +94,33 @@ for i = 1:nFile
     arg_noisy = 4;
     arg_burst = 'off';
     arg_window = 'off';
-    EEG = clean_rawdata(EEG, ...
-                        arg_flatline, ...
-                        arg_highpass, ...
-                        arg_channel, ...
-                        arg_noisy, ...
-                        arg_burst, ...
-                        arg_window);
+    % EEG = clean_rawdata(EEG, ...
+    %                     arg_flatline, ...
+    %                     arg_highpass, ...
+    %                     arg_channel, ...
+    %                     arg_noisy, ...
+    %                     arg_burst, ...
+    %                     arg_window);
     % re-reference
     EEG = pop_reref(EEG, []);
     EEG = eeg_checkset(EEG);
     % epoching
-    EEG = pop_epoch(EEG, MARKS, EPOCHTIME);
-    EEG = eeg_checkset(EEG);
+    EEG = pop_epoch( EEG, ...
+                     {  'no_neg_big'  'no_neg_small'  'no_pos_big' ...
+                        'no_pos_small'  'yes_neg_big'  'yes_neg_mall'...
+                        'yes_pos_big'  'yes_pos_small'  }, ...
+                     [-1  2], 'newname', 'cn_subj10_merge epochs', ...
+                     'epochinfo', 'yes');
+    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off');
+    EEG = eeg_checkset( EEG );
+    EEG = pop_rmbase( EEG, []);
+    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off'); 
+    % epoching
+    % EEG = pop_epoch(EEG, MARKS, EPOCHTIME);
+    % EEG = eeg_checkset(EEG);
+    % baseline correction
+    % EEG = pop_rmbase(EEG, []);
+    % EEG = eeg_checkset(EEG);
     % save dataset
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = [];

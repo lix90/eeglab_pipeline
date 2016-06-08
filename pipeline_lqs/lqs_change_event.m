@@ -1,6 +1,6 @@
 %% eeglab pipeline for lqs: change events
 clear, clc, close
-base_dir = '~/data/lqs_gambling/raw/';
+base_dir = '~/Data/lqs_gambling/';
 in_dir = fullfile(base_dir, 'uncon');
 ou_dir = fullfile(base_dir, 'change_event');
 if ~exist(ou_dir, 'dir'); mkdir(ou_dir); end

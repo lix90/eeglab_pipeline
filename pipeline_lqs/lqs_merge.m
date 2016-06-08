@@ -1,12 +1,12 @@
 %% eeglab pipeline for lqs: merge datasets
 clear, clc, close
 
-base_dir = '/media/lix/store/data/lqs_gambling/raw/';
+base_dir = '~/Data/lqs_gambling/';
 in_dir = 'change_event';
 ou_dir = 'merge';
 ext = 'set';
 splitPos = 1;
-poolsize = 4;
+poolsize = 2;
 
 %%
 inputDir = fullfile(base_dir, in_dir);
@@ -16,13 +16,14 @@ tmp = dir(fullfile(inputDir, strcat('*', ext)));
 fileName = {tmp.name};
 id = get_prefix(fileName, 2);
 id = unique(id);
+
 % if matlabpool('size') < poolsize
 %     matlabpool('local', poolsize);
 % end
 
 eeglab_opt;
-for i = 1:2
-    %length(ID)
+for i = 1:numel(id)
+    %length(id)
     ALLEEG = []; EEG = []; CURRENTSET = 0;
     name = strcat(id{i}, '_merge.set');
     outName = fullfile(outputDir, name);

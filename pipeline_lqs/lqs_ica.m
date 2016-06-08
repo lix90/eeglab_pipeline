@@ -1,13 +1,19 @@
 clear, clc, close all
+% % addpah
+% fprintf('adding path');
+% lix_scripts_path = '/nfs/data1/YuanJiajin/Lix/lix_scripts';
+% eeglab_path = '/nfs/data1/YuanJiajin/Lix/eeglab_dev';
+% addpath(genpath(lix_scripts_path));
+% addpath(genpath(eeglab_path));
 
 % set directory
-baseDir = '~/Data/moodPain_final/';
-inputDir = fullfile(baseDir, 'epoch');
+baseDir = '~/Data/lqs_gambling/';
+inputDir = fullfile(baseDir, 'pre3');
 outputDir = fullfile(baseDir, 'ica');
-poolsize = 6;
+poolsize = 12;
 
 % epoch rejection
-rightRESP = {'S  7'};
+rightRESP = [];
 chanorcomp = 'channels';
 
 % ica parameters
@@ -24,10 +30,14 @@ id = get_prefix(fileName, 1);
 id = natsort(unique(id));
 
 % Open matlab pool
-if matlabpool('size') < poolsize
-    matlabpool('local', poolsize);
+if matlabpool('size') == 0
+    matlabpool('open', poolsize);
+else
+    matlabpool close
+    matlabpool('open', poolsize);
 end
 
+Fprintf('start loop')
 parfor i = 1:nFile
 
     % prepare output filename
@@ -45,10 +55,10 @@ parfor i = 1:nFile
     EEG = lix_rej_epoch(EEG, rightRESP, chanorcomp);
     EEG = pop_reref(EEG, []);
 
-    % baseline-zero'd
-    % Note that if data consists of multiple discontinuous epochs, 
-    % each epoch should be separately baseline-zero'd using
-    EEG = pop_rmbase(EEG, []);
+    % % baseline-zero'd
+    % % Note that if data consists of multiple discontinuous epochs, 
+    % % each epoch should be separately baseline-zero'd using
+    % EEG = pop_rmbase(EEG, []);
     
     % run ica
     EEG = lix_runica(EEG, REF, RANK); % run ica
