@@ -1,16 +1,13 @@
 % set parameters
 baseDir = '~/Data/moodPain_final/';
-inputDir = fullfile(baseDir, 'single_rv15_2');
+inputDir = fullfile(baseDir, 'interp');
 outputDir = inputDir;
 
-nvar = 2; % number of variables
-nameStudy = 'painEmpathy_rv15_2.study';
-nameTask = 'pain empathy';
+nameStudy = 'lqs_gambling.study';
+nameTask = 'emotion regulation & gambling';
 noteStudy = '1Hz-average';
 dipselect = [];
 inbrain = [];
-V1 = {'Neg', 'Neu', 'Pos'};
-V2 = {'noPain', 'Pain'};
 tmp = dir(fullfile(inputDir, '*.set'));
 setname = natsort({tmp.name});
 setname_prefix = get_prefix(setname, 2);
@@ -20,32 +17,17 @@ ALLEEG = []; EEG = []; STUDY = [];
 EEG = pop_loadset('filename', setname, 'filepath', inputDir);
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'study',0);
 
-[sb, sb_remain] = strtok(setname, '_');
-[con, con_remain] = strtok(sb_remain, '_');
-[grp, grp_remain] = strtok(con_remain, '_');
-[grp, grp_remain] = strtok(grp, '.');
+[group, tmp_] = strtok(setname, '_');
+[subj, ~] = strtok(tmp_, '_');
+
 % create studycommands cell arrays
 studycommands = cell(size(setname));
-switch nvar
-  case 0
-	for i = 1:numel(setname)
+for i = 1:numel(setname)
 		studycommands{i} = {'index', i, ...
-                            'subject', sb{i}};
- end	
-  case 1
-	for i = 1:numel(setname)
-		studycommands{i} = {'index', i, ...
-                            'subject', sb{i}, ...
-                            'condition', con{i}};
- end	
-  case 2
-	for i = 1:numel(setname)
-		studycommands{i} = {'index', i, ...
-                            'subject', sb{i}, ...
-                            'condition', con{i}, ...
-                            'group', grp{i}};
- end
+                        'subject', subj{i}, ...
+                        'group', group{i}};
 end
+
 if ~isempty(inbrain) && ~isempty(dipselect)
 	studycommands = {studycommands{:}, {'inbrain', inbrain, 'dipselect', dipselect}};
 end

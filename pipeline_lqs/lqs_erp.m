@@ -55,7 +55,6 @@ tmp_pre = dir(fullfile(pre_dir, '*.set'));
 pre_filename = natsort({tmp_pre.name});
 ID_pre = natsort(unique(get_prefix(pre_filename, 2)));
 
-
 tmp_ica = dir(fullfile(ica_dir, '*.set'));
 ica_filename = natsort({tmp_ica.name});
 ID_ica = natsort(unique(get_prefix(ica_filename, 2)));

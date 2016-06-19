@@ -1,12 +1,12 @@
 clear, clc, close all
 inputDir = '~/data/Mood-Pain-Empathy/';
-outputDir = fullfile(inputDir, 'csvERSP_rv15_new');
+outputDir = fullfile(inputDir, 'csvERSP_rv15_final');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-load(fullfile(inputDir, 'study_rv15.mat'))
+load(fullfile(inputDir, 'study_rv15.mat'));
 
-alpha = [8, 13];
+alpha = [9, 13];
 beta = [14, 25];
-time = [500 1000];
+time = [500, 1000];
 
 %% start
 times = STUDY.changrp(1).ersptimes;
@@ -14,7 +14,8 @@ nt = length(times);
 freqs = STUDY.changrp(1).erspfreqs;
 nf = length(freqs);
 subjs = STUDY.subject';
-exclud = {'chenxu', 'chenyanqiu', 'dairubiao', 'xujin', 'pujianyong'};
+exclud = {'chenxu', 'chenyanqiu', 'dairubiao', ...
+          'xujin', 'pujianyong'};
 subjs = subjs(~ismember(subjs, exclud));
 ns = numel(subjs);
 chanlabels = [STUDY.changrp.channels];

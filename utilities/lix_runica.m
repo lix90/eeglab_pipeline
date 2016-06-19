@@ -22,6 +22,6 @@ if ischar(ranknum) && strcmpi(ranknum, 'auto')
 	end
 elseif isnumeric(ranknum) && ranknum > 0
 	r = ranknum;
-	EEG = pop_runica(EEG,'extended',1, 'pca', r, 'interupt', 'off');
+	EEG = pop_runica(EEG, 'extended',1, 'pca', r, 'interupt', 'off');
 end
 EEG = eeg_checkset(EEG);
