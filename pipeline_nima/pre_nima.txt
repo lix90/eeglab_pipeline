@@ -1,0 +1,11 @@
+%% preprocessing pipeline based on nima's suggestions
+
+inputDir = '';
+outputDir = '';
+
+
+
+
+
+% add channel locations
+

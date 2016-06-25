@@ -1,10 +1,11 @@
 clear, clc, close all
-baseDir = '~/Data/lqs_gambling/';
-inputDir = fullfile(baseDir, 'merge');
-outputDir = fullfile(baseDir, 'pre');
 
-%% input parameters
-DS = 250; % downsampling
+baseDir = '~/Desktop/data/'; % 存放数据的根目录
+inputDir = fullfile(baseDir, 'raw'); % 输入数据文件夹
+outputDir = fullfile(baseDir, 'pre'); % 输出数据文件夹
+
+%% input parameters 一些参数的指派
+DS = 250; % 
 HP = 1;
 MODEL = 'Spherical';
 UNUSED = {'VEO', 'HEOR', 'VEOG', 'HEOG',  'TP9', 'TP10'};
@@ -12,9 +13,10 @@ CHANTHRESH = 0.5;
 REF = 'average';
 ONREF = 'FCz';
 TIME = [-1, 2]; % epoch time range
-MARKS = {}; 
-n_prefix = 1;
-poolsize = 4;
+MARKS = {'S 11', 'S 12', 'S 13', 'S 14'};
+badChanAutoRej = 1;
+n_prefix = 2;
+% poolsize = 4;
 
 %% channel location files
 switch MODEL
@@ -31,21 +33,21 @@ end
 %% prepare datasets
 if ~exist(inputDir, 'dir'); disp('inputDir does not exist\n please reset it'); return; end
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-tmp = dir(fullfile(inputDir, '*.set'));
+tmp = dir(fullfile(inputDir, '*.eeg'));
 fileName = natsort({tmp.name});
 nFile = numel(fileName);
 ID = get_prefix(fileName, n_prefix);
 ID = natsort(unique(ID));
 
 %% Open matlab pool
-if matlabpool('size') == 0
-    matlabpool('local', poolsize);
-elseif matlabpool('size') ~= poolsize
-    matlabpool('close')
-    matlabpool('local', poolsize);
-end
+% if matlabpool('size') == 0
+%     matlabpool('local', poolsize);
+% elseif matlabpool('size') ~= poolsize
+%     matlabpool('close')
+%     matlabpool('local', poolsize);
+% end
 
-eeglab_opt;
+% eeglab_opt;
 ALLEEG = []; EEG = []; CURRENTSET = [];
 for i = 1:nFile
 
@@ -62,7 +64,7 @@ for i = 1:nFile
       case 'set'
         EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
       case 'eeg'
-        EEG = pop_fileio('filename', fullfile(inputDir, fileName{i}));
+        EEG = pop_fileio(fullfile(inputDir, fileName{i}));
     end
     EEG = eeg_checkset(EEG);
 
@@ -116,13 +118,12 @@ for i = 1:nFile
         EEG = eeg_checkset(EEG);
     end
     % epoching
-    EEG = pop_epoch( EEG, MARKS, [-1  2], 'epochinfo', 'yes');
-    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off');
+    EEG = pop_epoch( EEG, MARKS, TIME, 'epochinfo', 'yes');
+%     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off');
     EEG = eeg_checkset( EEG );
     EEG = pop_rmbase( EEG, []);
-    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off'); 
+%     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off'); 
     % save dataset
     EEG = pop_saveset(EEG, 'filename', outName);
     EEG = [];
 end
-

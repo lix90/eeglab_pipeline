@@ -1,7 +1,7 @@
 clear, clc, close all
 
 % set directory
-baseDir = '~/Data/lqs_gambling/';
+baseDir = '~/Desktop/data/';
 inputDir = fullfile(baseDir, 'pre');
 outputDir = fullfile(baseDir, 'ica');
 poolsize = 4;
@@ -21,15 +21,15 @@ ID = get_prefix(fileName, n_prefix);
 ID = natsort(unique(ID));
 
 % Open matlab pool
-if matlabpool('size') == 0
-    matlabpool('open', poolsize);
-else
-    matlabpool close
-    matlabpool('open', poolsize);
-end
+% if matlabpool('size') == 0
+%     matlabpool('open', poolsize);
+% else
+%     matlabpool close
+%     matlabpool('open', poolsize);
+% end
 
 fprintf('start loop')
-parfor i = 1:nFile
+for i = 1:nFile
 
     % prepare output filename
     name = strcat(ID{i}, '_ica.set');
