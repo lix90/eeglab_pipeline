@@ -1,22 +1,23 @@
 % pipeline for pre-ica preprocessing
 
-baseDir = '';
-inputDir = fullfile(baseDir, 'raw');
-outputDir = fullfile(baseDir, 'pre');
+baseDir = '~/Data/gender-role-emotion-regulation/';
+inputDir = fullfile(baseDir, 'merge');
+outputDir = fullfile(baseDir, 'pre_nima_test');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
-fileExtension = 'eeg';
+fileExtension = 'set';
 prefixPosition = 1;
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
-appendOnlneRef = true;
+appendOnlineRef = true;
 offlineRef = 'average';
 sampleRate = 250;
-hiPassHz = 0.01;
+hiPassHz = 0.1;
 
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
-for i = 1:numel(id)
+% for i = 1:numel(id)
+for i = 2:3
     outputFilename = sprintf('%s_pre.set', id{i});
     outputFilenameFull = fullfile(outputDir, outputFilename);
     
@@ -29,10 +30,10 @@ for i = 1:numel(id)
     EEG = importEEG(inputDir, inputFilename{i});
     
     % add channel locations
-    EEG = addChanlLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
+    EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
     % down-sampling
-    EEG = pop_downsample(EEG, sampleRate);
+    EEG = pop_resample(EEG, sampleRate);
     EEG = eeg_checkset(EEG);
     
     % high pass filtering
@@ -48,7 +49,7 @@ for i = 1:numel(id)
         rmChans = setdiff(rmChans, offlineRef);
     end
     
-    EEG = pop_select(EEG, 'nochannels', rmChans);
+    EEG = pop_select(EEG, 'nochannel', rmChans);
     EEG = eeg_checkset(EEG);
     EEG.etc.origChanlocs = EEG.chanlocs;
     
@@ -61,7 +62,7 @@ for i = 1:numel(id)
     % reject bad channels
     badChannels = eeg_detect_bad_channels(EEG);
     EEG.etc.badChannels = badChannels;
-    EEG = pop_select(EEG, 'nochannels', badChannels);
+    EEG = pop_select(EEG, 'nochannel', badChannels);
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')

@@ -1,8 +1,8 @@
 % pipeline for preprocessing ica
 
-baseDir = '';
-inputDir = fullfile(baseDir, 'pre');
-outputDir = fullfile(baseDir, 'ica');
+baseDir = '~/Data/gender-role-emotion-regulation/';
+inputDir = fullfile(baseDir, 'pre_nima_test');
+outputDir = fullfile(baseDir, 'ica_nima_test');
 
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
@@ -44,7 +44,7 @@ for i = 1:numel(id)
     % EEG = eeg_checkset(EEG);
     
     % high pass fitering if necessary
-    if exist(hiPassHz, 'var') && ~isempty(hiPassHz)
+    if exist('hiPassHz', 'var') && ~isempty(hiPassHz)
         cleanEEG = pop_eegfiltnew(EEG, hiPassHz, 0);
     else
         cleanEEG = EEG;
