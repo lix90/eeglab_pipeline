@@ -1,11 +1,11 @@
 % pipeline for pre-ica preprocessing
 
-baseDir = '~/Data/gender-role-emotion-regulation/';
-inputDir = fullfile(baseDir, 'merge');
-outputDir = fullfile(baseDir, 'pre_nima_test');
+baseDir = '~/Data/mx_music/';
+inputDir = fullfile(baseDir, 'raw');
+outputDir = fullfile(baseDir, 'pre');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
-fileExtension = 'set';
+fileExtension = 'eeg';
 prefixPosition = 1;
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
@@ -17,7 +17,7 @@ hiPassHz = 0.1;
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
 % for i = 1:numel(id)
-for i = 2:3
+for i = numel(id)
     outputFilename = sprintf('%s_pre.set', id{i});
     outputFilenameFull = fullfile(outputDir, outputFilename);
     
@@ -27,10 +27,7 @@ for i = 2:3
     end
     
     % import dataset
-    EEG = importEEG(inputDir, inputFilename{i});
-    
-    % add channel locations
-    EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
+    [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
     
     % down-sampling
     EEG = pop_resample(EEG, sampleRate);
@@ -39,7 +36,10 @@ for i = 2:3
     % high pass filtering
     EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
     EEG = eeg_checkset(EEG);
-
+    
+    % add channel locations
+    EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
+    
     % remove channels
     rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
                'VEOD', 'VEO', 'VEOU', 'VEOG', ...

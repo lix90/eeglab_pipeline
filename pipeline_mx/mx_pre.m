@@ -1,129 +1,91 @@
 clear, clc, close all
 
-baseDir = '~/Desktop/data/'; % 存放数据的根目录
-inputDir = fullfile(baseDir, 'raw'); % 输入数据文件夹
-outputDir = fullfile(baseDir, 'pre'); % 输出数据文件夹
-
-%% input parameters 一些参数的指派
-DS = 250; % 
-HP = 1;
-MODEL = 'Spherical';
-UNUSED = {'VEO', 'HEOR', 'VEOG', 'HEOG',  'TP9', 'TP10'};
-CHANTHRESH = 0.5;
-REF = 'average';
-ONREF = 'FCz';
-TIME = [-1, 2]; % epoch time range
-MARKS = {'S 11', 'S 12', 'S 13', 'S 14'};
-badChanAutoRej = 1;
-n_prefix = 2;
-% poolsize = 4;
-
-%% channel location files
-switch MODEL
-  case 'MNI'
-    locFile = 'standard_1005.elc';
-  case 'Spherical'
-    locFile = 'standard-10-5-cap385.elp';
-end
-locDir = which(locFile);
-if ispc
-    locDir = strrep(locDir, '\', '/');
-end
-
-%% prepare datasets
-if ~exist(inputDir, 'dir'); disp('inputDir does not exist\n please reset it'); return; end
+baseDir = '~/Data/mx_music/'; %
+inputDir = fullfile(baseDir, 'raw'); %
+outputDir = fullfile(baseDir, 'pre2'); %
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-tmp = dir(fullfile(inputDir, '*.eeg'));
-fileName = natsort({tmp.name});
-nFile = numel(fileName);
-ID = get_prefix(fileName, n_prefix);
-ID = natsort(unique(ID));
 
-%% Open matlab pool
-% if matlabpool('size') == 0
-%     matlabpool('local', poolsize);
-% elseif matlabpool('size') ~= poolsize
-%     matlabpool('close')
-%     matlabpool('local', poolsize);
-% end
+sampleRate = 250;
+hiPassHz = 0.5;
+brainTemplate = 'Spherical';
+onlineRef = 'FCz';
+appendOnlineRef = true;
+offlineRef = {'TP9', 'TP10'};
+timeRange = [-1, 2];
+marks = {'S 53', 'S 58', 'S103', 'S108'};
+badChanAutoRej = 1;
+fileExtension = 'eeg';
+prefixPosition = 1;
+poolsize = [];
+ 
 
-% eeglab_opt;
-ALLEEG = []; EEG = []; CURRENTSET = [];
-for i = 1:nFile
+%%------------------------
+[inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
-    % prepare output filename
-    name = strcat(ID{i}, '_pre.set');
-    outName = fullfile(outputDir, name);
-    % check if file exists
-    if exist(outName, 'file'); warning('files already exist'); continue; end
+rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
+           'VEOD', 'VEO', 'VEOU', 'VEOG', ...
+           'M1', 'M2', 'TP9', 'TP10'};
 
-    % check file extention
-    fileExt = fileName{i}(end-2:end);
-    % load dataset
-    switch fileExt
-      case 'set'
-        EEG = pop_loadset('filename', fileName{i}, 'filepath', inputDir);
-      case 'eeg'
-        EEG = pop_fileio(fullfile(inputDir, fileName{i}));
+if exist('poolSize', 'var') && ~isempty(poolSize)
+    setMatlabPool(poolSize)
+end
+
+parfor i = 1:numel(id)
+
+    outputFilename = strcat(id{i}, '_pre.set');
+    outputFilenameFull = fullfile(outputDir, outputFilename);
+    if exist(outputFilenameFull, 'file'); warning('files already exist'); continue; end
+
+    % import EEG dataset
+    EEG = importEEG(inputDir, inputFilename{i});
+    
+    % down-sampling
+    EEG = pop_resample(EEG, sampleRate);
+    EEG = eeg_checkset(EEG);
+    
+    % high pass filtering
+    EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
+    EEG = eeg_checkset(EEG);
+    
+    % add channel locations
+    EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
+
+    % remove channels
+    if ~strcmp(offlineRef, 'average')
+        rmChansNew = setdiff(rmChans, offlineRef);
+    else
+        rmChansNew = rmChans;
     end
+    EEG = pop_select(EEG, 'nochannel', rmChansNew);
     EEG = eeg_checkset(EEG);
-
-    %% add channel locations
-    EEG = pop_chanedit(EEG, 'lookup', locDir); % add channel location
-    EEG = eeg_checkset(EEG);
-    nchan = size(EEG.data, 1);
-    EEG = pop_chanedit(EEG, 'append', nchan, ...
-                       'changefield',{nchan+1, 'labels', ONREF}, ...
-                       'lookup', locDir, ...
-                       'setref',{['1:',int2str(nchan+1)], ONREF}); % add online reference
-    EEG = eeg_checkset(EEG);
-    outStruct = chanLocCreate(ONREF, nchan+1);
-    EEG = pop_reref(EEG, [], 'refloc', outStruct); % retain online reference data back
-    EEG = eeg_checkset(EEG);
-    EEG = pop_chanedit(EEG, 'lookup', locDir, 'setref',{['1:', int2str(size(EEG.data, 1))] 'average'});
-    EEG = eeg_checkset(EEG);
-    chanlocs = pop_chancenter(EEG.chanlocs, []);
-    EEG.chanlocs = chanlocs;
-    EEG = eeg_checkset(EEG);
-    % remove nonbrain channels
-    chanLabels = {EEG.chanlocs.labels};
-    idx = find(ismember(chanLabels, UNUSED));
-    EEG = pop_select(EEG,'nochannel', idx);
-    EEG = eeg_checkset( EEG );
-    EEG.etc.origchalocs = EEG.chanlocs; % save original chanlocs
-    % downsampling to 250 Hz
-    EEG = pop_resample(EEG, DS);
-    EEG = eeg_checkset(EEG);
-    % high pass filtering: 
-    % 1 Hz for better ica results, but not proper for erp study
-    EEG = pop_eegfiltnew(EEG, HP, 0);
-    EEG = eeg_checkset(EEG);
-    % remove bad channels
-    if badChanAutoRej
-        arg_flatline = 5; % default is 5
-        arg_highpass = 'off';
-        arg_channel = CHANTHRESH; % default is 0.85
-        arg_noisy = 4;
-        arg_burst = 'off';
-        arg_window = 'off';
-        EEG = clean_rawdata(EEG, ...
-                            arg_flatline, ...
-                            arg_highpass, ...
-                            arg_channel, ...
-                            arg_noisy, ...
-                            arg_burst, ...
-                            arg_window);
-        % re-reference
+    EEG.etc.origChanlocs = EEG.chanlocs;
+    
+    % re-reference if necessary
+    if ~strcmp(offlineRef, 'average')
+        EEG = pop_reref(EEG, find(ismember({EEG.chanlocs.labels}, offlineRef)));
+        EEG = eeg_checkset(EEG);
+    end
+    
+    % reject bad channels
+    badChannels = eeg_detect_bad_channels(EEG);
+    EEG.etc.badChannels = badChannels;
+    EEG = pop_select(EEG, 'nochannel', badChannels);
+    
+    % re-reference if offRef is average
+    if strcmp(offlineRef, 'average')
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
     end
+
     % epoching
-    EEG = pop_epoch( EEG, MARKS, TIME, 'epochinfo', 'yes');
-%     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off');
-    EEG = eeg_checkset( EEG );
-    EEG = pop_rmbase( EEG, []);
-%     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'overwrite','on','gui','off'); 
+    EEG = pop_epoch(EEG, marks, timeRange, 'epochinfo', 'yes');
+    EEG = eeg_checkset(EEG);
+    
+    EEG = pop_rmbase(EEG, []);
+    EEG = eeg_checkset(EEG);
+
     % save dataset
-    EEG = pop_saveset(EEG, 'filename', outName);
+    EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     EEG = [];
+
 end

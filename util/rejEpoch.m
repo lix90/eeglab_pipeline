@@ -1,9 +1,8 @@
-function EEG = lix_rej_epoch(EEG, rightRESP, chanorcomp)
+function EEG = rejEpoch(EEG, rightRESP, chanorcomp)
 
 % rightRESP
 % wrong
 % bad
-
 
 m = zeros(1, size(EEG.data, 3));
 if strcmpi(chanorcomp, 'channels') % chan

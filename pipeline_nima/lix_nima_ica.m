@@ -1,8 +1,8 @@
 % pipeline for preprocessing ica
 
-baseDir = '~/Data/gender-role-emotion-regulation/';
-inputDir = fullfile(baseDir, 'pre_nima_test');
-outputDir = fullfile(baseDir, 'ica_nima_test');
+baseDir = '~/Data/mx_music/';
+inputDir = fullfile(baseDir, 'pre');
+outputDir = fullfile(baseDir, 'ica');
 
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 

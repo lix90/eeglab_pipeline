@@ -20,9 +20,7 @@ function EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef)
                            'lookup', chanLocDir, ...
                            'setref',{['1:',int2str(nChan+1)], onlineRef}); % add online reference
         EEG = eeg_checkset(EEG);
-        
         newChanLoc = createChanLoc(onlineRef, nChan+1);
-        
         EEG = pop_reref(EEG, [], 'refloc', newChanLoc); % retain online reference data back
         EEG = eeg_checkset(EEG);
         EEG = pop_chanedit(EEG, 'lookup', chanLocDir, 'setref',{['1:', int2str(size(EEG.data, 1))] 'average'});

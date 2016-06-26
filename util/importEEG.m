@@ -1,5 +1,6 @@
-function EEG = importEEG(inputDir, filename)
+function [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, filename)
 
+[ALLEEG EEG CURRENTSET ALLCOM] = eeglab;
 fileExtension = filename(end-2:end);
 % load dataset
 switch fileExtension
@@ -11,5 +12,8 @@ switch fileExtension
     disp('file extension does not match');
     return
 end
+[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 0, ...
+                                     'setname', filename(1:end-3), ...
+                                     'gui','off'); 
 EEG = eeg_checkset(EEG);
 
