@@ -49,6 +49,6 @@ EEG = pop_multifit( EEG, [1:nComp] , ...
 EEG = eeg_checkset(EEG);
 
 % identify outside dipoles and dipoles rv above xx%
-selectedICs = eeg_dipselect(EEG, rvReject, 'inbrain', 1);
+selectedICs = eeg_dipselect(EEG, rvReject*100, 'inbrain', 1);
 badICs = ones(1, nComp);
 badICs(selectedICs) = 0;

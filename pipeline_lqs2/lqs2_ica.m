@@ -1,3 +1,4 @@
+clear, clc, close all
 % pipeline for preprocessing ica
 
 baseDir = '';

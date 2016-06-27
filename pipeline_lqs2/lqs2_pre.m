@@ -1,5 +1,5 @@
+clear, clc, close all
 % pipeline for pre-ica preprocessing
-
 baseDir = '';
 inputTag = '';
 outputTag = '';
@@ -20,14 +20,14 @@ if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
 rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
-               'VEOD', 'VEO', 'VEOU', 'VEOG', ...
-               'M1', 'M2', 'TP9', 'TP10'};
+           'VEOD', 'VEO', 'VEOU', 'VEOG', ...
+           'M1', 'M2', 'TP9', 'TP10'};
 
 setEEGLAB;
 
 % for i = 1:numel(id)
 for i = numel(id)
-    outputFilename = sprintf('%s_pre.set', id{i});
+    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     
     if exist(outputFilenameFull, 'file')
@@ -43,8 +43,10 @@ for i = numel(id)
     EEG = eeg_checkset(EEG);
     
     % high pass filtering
-    EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
-    EEG = eeg_checkset(EEG);
+    if exist('hiPassHz', 'var') && ~isempty(hiPassHz)
+        EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
+        EEG = eeg_checkset(EEG);
+    end
     
     % add channel locations
     EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);

@@ -1,42 +1,51 @@
-% pipeline for pre-ica preprocessing
+clear, clc, close all
 
+%% parameter setting
 baseDir = '';
-inputTag = '';
-outputTag = '';
-fileExtension = 'eeg';
-prefixPosition = 1;
+inputTag = 'merge';
+outputTag = 'preMastoids';
+sampleRate = 250;
+hiPassHz = 0.01;
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
-offlineRef = 'average';
-sampleRate = 250;
-hiPassHz = 0.01;
+offlineRef = {'TP9', 'TP10'};
+timeRange = [-1, 2];
+marks = {'yes_neg_small', 'yes_neg_big', ...
+        'yes_pos_small', 'yes_pos_big',...
+        'no_neg_small', 'no_neg_big',...
+        'no_pos_small', 'no_pos_big'};
+badChanAutoRej = true;
+fileExtension = 'eeg';
+prefixPosition = 1;
+poolSize = 2;
 
-%%--------------
+%%------------------------
 
 inputDir = fullfile(baseDir, inputTag);
 outputDir = fullfile(baseDir, outputTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
+
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
 rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
-               'VEOD', 'VEO', 'VEOU', 'VEOG', ...
-               'M1', 'M2', 'TP9', 'TP10'};
+           'VEOD', 'VEO', 'VEOU', 'VEOG', ...
+           'M1', 'M2', 'TP9', 'TP10'};
+
+if exist('poolSize', 'var') && ~isempty(poolSize)
+    setMatlabPool(poolSize)
+end
 
 setEEGLAB;
 
-% for i = 1:numel(id)
-for i = numel(id)
-    outputFilename = sprintf('%s_pre.set', id{i});
+parfor i = 1:numel(id)
+
+    outputFilename = strcat(id{i}, strcat('_', outputTag, '.set'));
     outputFilenameFull = fullfile(outputDir, outputFilename);
-    
-    if exist(outputFilenameFull, 'file')
-        warning('files alrealy exist!')
-        continue
-    end
-    
-    % import dataset
-    [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
+    if exist(outputFilenameFull, 'file'); warning('files already exist'); continue; end
+
+    % import EEG dataset
+    EEG = importEEG(inputDir, inputFilename{i});
     
     % down-sampling
     EEG = pop_resample(EEG, sampleRate);
@@ -48,14 +57,13 @@ for i = numel(id)
     
     % add channel locations
     EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
-    
+
     % remove channels
     if ~strcmp(offlineRef, 'average')
         rmChansReal = setdiff(rmChans, offlineRef);
     else
         rmChansReal = rmChans;
     end
-    
     EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
     EEG.etc.origChanlocs = EEG.chanlocs;
@@ -63,22 +71,33 @@ for i = numel(id)
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         EEG = pop_reref(EEG, find(ismember({EEG.chanlocs.labels}, offlineRef)));
-        EEG = eeg_checkset(EEG);
+    else
+        EEG = pop_reref(EEG, []);
     end
+    EEG = eeg_checkset(EEG);
     
-    % reject bad channels
-    badChannels = eeg_detect_bad_channels(EEG);
-    EEG.etc.badChannels = badChannels;
-    EEG = pop_select(EEG, 'nochannel', badChannels);
+    if badChanAutoRej
+        % reject bad channels
+        badChannels = eeg_detect_bad_channels(EEG);
+        EEG.etc.badChannels = badChannels;
+        EEG = pop_select(EEG, 'nochannel', badChannels);
+    end
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
     end
+
+    % epoching
+    EEG = pop_epoch(EEG, marks, timeRange, 'epochinfo', 'yes');
+    EEG = eeg_checkset(EEG);
     
+    EEG = pop_rmbase(EEG, []);
+    EEG = eeg_checkset(EEG);
+
     % save dataset
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     EEG = [];
-    
+
 end

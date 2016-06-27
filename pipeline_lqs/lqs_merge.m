@@ -1,39 +1,41 @@
 %% eeglab pipeline for lqs: merge datasets
 clear, clc, close
 
-base_dir = '~/Data/lqs_gambling/';
-in_dir = 'change_event';
-ou_dir = 'merge';
-ext = 'set';
-splitPos = 1;
-poolsize = 2;
+baseDir = '~/Data/lqs_gambling/';
+inputTag = 'change_event';
+outputTag = 'merge';
+fileExtension = 'set';
+prefixPosition = 1;
+poolSize = 2;
 
-%%
-inputDir = fullfile(base_dir, in_dir);
-outputDir = fullfile(base_dir, ou_dir);
+%%============================================
+
+inputDir = fullfile(baseDir, inputTag);
+outputDir = fullfile(baseDir, outputTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-tmp = dir(fullfile(inputDir, strcat('*', ext)));
-fileName = {tmp.name};
-id = get_prefix(fileName, 2);
-id = unique(id);
 
-% if matlabpool('size') < poolsize
-%     matlabpool('local', poolsize);
-% end
+[inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
-eeglab_opt;
+if exist('poolSize', 'var') && ~isempty(poolSize)
+    setMatlabPool(poolSize)
+end
+
+setEEGLAB;
+
 for i = 1:numel(id)
-    %length(id)
+
     ALLEEG = []; EEG = []; CURRENTSET = 0;
-    name = strcat(id{i}, '_merge.set');
-    outName = fullfile(outputDir, name);
+
+    outputFilename = strcat(id{i}, strcat('_', outputTag, '.set'));
+    outputFilenameFull = fullfile(outputDir, outputFilename);
     if exist(outName, 'file'); warning('files already exist'); continue; end
     fprintf('Merging subject %i/%i\n', i, numel(id));
-    tmp = dir(fullfile(inputDir, strcat(id{i}, '_*.', ext)));
+    
+    tmp = dir(fullfile(inputDir, strcat(id{i}, '_*.', fileExtension)));
     setMerge = {tmp.name};
     % load set
     for j = 1:length(setMerge)
-        switch ext
+        switch fileExtension
           case 'eeg'
             EEG = pop_fileio(fullfile(inputDir, setMerge{j}));
           case 'set'
@@ -54,7 +56,8 @@ for i = 1:numel(id)
         [ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);
         EEG = eeg_checkset(EEG);
     end
-    EEG.setname = strcat(id{i}, '_merge');
-    EEG = pop_saveset(EEG, 'filename', outName);
+    EEG.setname = strcat(id{i}, strcat('_', outputTag));
+    EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     ALLEEG = []; EEG = []; CURRENTSET = 0;
+    
 end

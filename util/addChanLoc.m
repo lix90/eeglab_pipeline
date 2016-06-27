@@ -1,5 +1,9 @@
 function EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef)
 
+% add channel locations & recover online reference 
+% e.g. EEG = addChanLoc(EEG, 'Spherical', 'FCz', true)
+    
+    
     switch brainTemplate
       case 'MNI'
         locFile = 'standard_1005.elc';
