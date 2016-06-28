@@ -1,4 +1,5 @@
 clear, clc, close all
+
 % pipeline for pre-ica preprocessing
 baseDir = '';
 inputTag = '';
@@ -27,6 +28,7 @@ setEEGLAB;
 
 % for i = 1:numel(id)
 for i = numel(id)
+    
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     
@@ -66,6 +68,8 @@ for i = numel(id)
     if ~strcmp(offlineRef, 'average')
         EEG = pop_reref(EEG, find(ismember({EEG.chanlocs.labels}, offlineRef)));
         EEG = eeg_checkset(EEG);
+    elseif isempty(offlineRef)
+        disp('not to be re-referenced')
     end
     
     % reject bad channels
@@ -81,6 +85,6 @@ for i = numel(id)
     
     % save dataset
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
-    EEG = [];
+    EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end

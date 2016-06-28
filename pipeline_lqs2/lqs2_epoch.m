@@ -2,6 +2,7 @@
 clear, clc, close
 
 baseDir = '';
+chanlocDir = '';
 inputTag = '';
 outputTag = 'epoch';
 fileExtension = 'set';
@@ -28,22 +29,25 @@ setEEGLAB;
 
 parfor i = 1:numel(id)
 
-    outputFilename = strcat(id{i}, strcat('_', outputTag, '.set'));
+    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     if exist(outName, 'file'); warning('files already exist'); continue; end
-    fprintf('Merging subject %i/%i\n', i, numel(id));
 
     [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
     
     % reject bad ICs
+    EEG = pop_subcomp(EEG, [], 0);
+    EEG = eeg_checkset(EEG);
     
     % interpolate channels
+    EEG = eeg_interp(EEG, chanlocs, 'spherical');
+    EEG = eeg_checkset(EEG);
     
     % epoch
     EEG = pop_epoch(EEG, marks, timeRange, 'epochinfo', 'yes');
     EEG = eeg_checkset(EEG);
 
-    EEG.setname = strcat(id{i}, strcat('_', outputTag));
+    EEG.setname = sprintf('%s_%s', id{i}, outputTag);
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     ALLEEG = []; EEG = []; CURRENTSET = [];
     

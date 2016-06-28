@@ -2,8 +2,8 @@ clear, clc, close all
 
 %% parameters
 baseDir = '';
-inputTag = '';
-outputTag = '';
+inputTag = 'ica';
+outputTag = 'dipfit';
 rvDipoleEstimate = 1;
 brainTemplate = 'Spherical'; % 'MNI' or 'Spherical'
 rvReject = 0.15;
@@ -22,7 +22,7 @@ setEEGLAB;
 
 parfor i = 1:numel(id)
 
-    outputFilename = strcat(id{i}, '_dipfit.set'));
+    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     if exist(outName, 'file')
         warning('files already exist');

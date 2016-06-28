@@ -4,9 +4,11 @@ clear, clc, close
 baseDir = '';
 inputTag = '';
 outputTag = 'clean';
+baseline = [-200, 0];
+rightRESP = [];
 fileExtension = 'set';
 prefixPosition = 1;
-poolSize = 2;
+poolSize = 4;
 
 %%============================================
 
@@ -31,14 +33,14 @@ parfor i = 1:numel(id)
     [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
     
     % reject bad epochs
-    
-    % interpolate channels
+    EEG = rejEpoch(EEG, rightRESP, 'channels');
+    EEG = eeg_checkset(EEG);
     
     % baseline correction
     EEG = pop_rmbase(EEG, baseline);
     EEG = eeg_checkset(EEG);
     
-    EEG.setname = strcat(id{i}, strcat('_', outputTag));
+    EEG.setname = sprintf('%s_%s', id{i}, outputTag);
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     ALLEEG = []; EEG = []; CURRENTSET = [];
     

@@ -6,7 +6,7 @@ inputTag = '';
 outputTag = '';
 fileExtension = 'set';
 prefixPosition = 1;
-offlineRef = 'average';
+offlineRef = {'TP9', 'TP10'};
 hiPassHz = 1; % for ica
 
 %%---------
@@ -29,7 +29,7 @@ for i = 1:numel(id)
     end
     
     % import dataset
-    EEG = importEEG(inputDir, inputFilename{i});
+    [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
     
     % clean data
     % if ~exist('maxbad','var') || isempty(maxbad) maxbad = 0.15; end
@@ -86,6 +86,6 @@ for i = 1:numel(id)
     % save dataset
     % parsave(outputFilenameFull, ica);
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
-    EEG = [];
+    EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
