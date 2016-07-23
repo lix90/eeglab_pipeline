@@ -1,16 +1,15 @@
 clear, clc, close all
 
 baseDir = '~/Data/mx_music/';
-inputDir = fullfile(baseDir, 'pre2');
-outputDir = fullfile(baseDir, 'ica2');
+inputDir = fullfile(baseDir, 'pre');
+outputDir = fullfile(baseDir, 'ica');
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
 fileExtension = 'set';
 prefixPosition = 1;
 poolSize = 4;
 rightRESP = [];
-chanOrIC = 'channels';
-offlineRef = 'average';
+offlineRef = {'TP9', 'TP10'};
 
 %%----------------------------
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);

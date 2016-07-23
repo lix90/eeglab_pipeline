@@ -1,13 +1,19 @@
 function EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef)
 
+% add channel locations & recover online reference 
+% e.g. EEG = addChanLoc(EEG, 'Spherical', 'FCz', true)
+    
+    eeglabDir = fileparts(which('eeglab.m'));
     switch brainTemplate
       case 'MNI'
         locFile = 'standard_1005.elc';
+        chanLocDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BEM', ...
+                              locFile);
       case 'Spherical'
         locFile = 'standard-10-5-cap385.elp';
+        chanLocDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BESA', ...
+                              locFile);
     end
-    chanLocDir = which(locFile);
-    if ispc; chanLocDir = strrep(chanLocDir, '\', '/'); end
 
     % add channel locations
     EEG = pop_chanedit(EEG, 'lookup', chanLocDir); % add channel location

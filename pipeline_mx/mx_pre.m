@@ -2,21 +2,21 @@ clear, clc, close all
 
 baseDir = '~/Data/mx_music/'; %
 inputDir = fullfile(baseDir, 'raw'); %
-outputDir = fullfile(baseDir, 'pre2'); %
+outputDir = fullfile(baseDir, 'pre'); %
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
 sampleRate = 250;
-hiPassHz = 0.5;
+hiPassHz = 1;
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10'};
 timeRange = [-1, 2];
 marks = {'S 53', 'S 58', 'S103', 'S108'};
-badChanAutoRej = 1;
+badChanAutoRej = true;
 fileExtension = 'eeg';
 prefixPosition = 1;
-poolsize = [];
+poolSize = 2;
  
 
 %%------------------------
@@ -63,13 +63,17 @@ parfor i = 1:numel(id)
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         EEG = pop_reref(EEG, find(ismember({EEG.chanlocs.labels}, offlineRef)));
-        EEG = eeg_checkset(EEG);
+    else
+        EEG = pop_reref(EEG, []);
     end
+    EEG = eeg_checkset(EEG);
     
-    % reject bad channels
-    badChannels = eeg_detect_bad_channels(EEG);
-    EEG.etc.badChannels = badChannels;
-    EEG = pop_select(EEG, 'nochannel', badChannels);
+    if badChanAutoRej
+        % reject bad channels
+        badChannels = eeg_detect_bad_channels(EEG);
+        EEG.etc.badChannels = badChannels;
+        EEG = pop_select(EEG, 'nochannel', badChannels);
+    end
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')

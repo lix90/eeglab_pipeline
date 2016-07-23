@@ -1,21 +1,25 @@
 % pipeline for preprocessing ica
 
-baseDir = '~/Data/mx_music/';
-inputDir = fullfile(baseDir, 'pre');
-outputDir = fullfile(baseDir, 'ica');
-
-if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-
+baseDir = '';
+inputTag = '';
+outputTag = '';
 fileExtension = 'set';
 prefixPosition = 1;
 offlineRef = 'average';
-hiPassHz = 1;
+hiPassHz = 1; % for ica
 
+%%---------
+
+inputDir = fullfile(baseDir, inputTag);
+outputDir = fullfile(baseDir, outputTag);
+if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
+
+setEEGLAB;
 
 for i = 1:numel(id)
     
-    outputFilename = sprintf('%s_ica.set', id{i});
+    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     
     if exist(outputFilenameFull, 'file')

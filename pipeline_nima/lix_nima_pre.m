@@ -1,10 +1,8 @@
 % pipeline for pre-ica preprocessing
 
-baseDir = '~/Data/mx_music/';
-inputDir = fullfile(baseDir, 'raw');
-outputDir = fullfile(baseDir, 'pre');
-if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-
+baseDir = '';
+inputTag = '';
+outputTag = '';
 fileExtension = 'eeg';
 prefixPosition = 1;
 brainTemplate = 'Spherical';
@@ -12,9 +10,20 @@ onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = 'average';
 sampleRate = 250;
-hiPassHz = 0.1;
+hiPassHz = 0.01;
 
+%%--------------
+
+inputDir = fullfile(baseDir, inputTag);
+outputDir = fullfile(baseDir, outputTag);
+if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
+
+rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
+               'VEOD', 'VEO', 'VEOU', 'VEOG', ...
+               'M1', 'M2', 'TP9', 'TP10'};
+
+setEEGLAB;
 
 % for i = 1:numel(id)
 for i = numel(id)
@@ -41,15 +50,13 @@ for i = numel(id)
     EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
     % remove channels
-    rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
-               'VEOD', 'VEO', 'VEOU', 'VEOG', ...
-               'M1', 'M2', 'TP9', 'TP10'};
-    
     if ~strcmp(offlineRef, 'average')
-        rmChans = setdiff(rmChans, offlineRef);
+        rmChansReal = setdiff(rmChans, offlineRef);
+    else
+        rmChansReal = rmChans;
     end
     
-    EEG = pop_select(EEG, 'nochannel', rmChans);
+    EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
     EEG.etc.origChanlocs = EEG.chanlocs;
     
