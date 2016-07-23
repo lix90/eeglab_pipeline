@@ -1,9 +1,20 @@
 function [filename, id] = getFileInfo(inputDir, ext, pos)
+% inputDir = input directory
+% ext = extension of files; str or cellstr
+% pos = position where filenames are to be seperated
 
-tmp = dir(fullfile(inputDir, strcat('*', ext)));
 
-filename = natsort({tmp.name});
-
+if iscellstr(ext)
+    filename = [];
+    for j = 1:numel(ext)
+        tmp = dir(fullfile(inputDir, strcat('*', ext{j})));
+        tmpfilename = natsort({tmp.name});
+        filename = [filename, tmpfilename];
+    end
+elseif ischar(ext)
+    tmp = dir(fullfile(inputDir, strcat('*', ext)));
+    filename = natsort({tmp.name});
+end
 % get id
 id = cell(size(filename));
 for i = 1:numel(filename)
