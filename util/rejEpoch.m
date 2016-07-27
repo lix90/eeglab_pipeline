@@ -1,8 +1,18 @@
-function EEG = rejEpoch(EEG, rightRESP, chanorcomp)
+function EEG = rejEpoch(EEG, wrongRESP, varargin)
 
-% rightRESP
+% wrongRESP
 % wrong
 % bad
+% 'channels' or 'components'
+
+if nargin==2
+    chanorcomp = 'channels';
+elseif nargin==3
+    chanorcomp = varargin{1};
+else
+    disp('the number of input arguments should be 2 or 3');
+    return
+end
 
 m = zeros(1, size(EEG.data, 3));
 if strcmpi(chanorcomp, 'channels') % chan
@@ -29,16 +39,14 @@ bad = find(rejall);
 
 % mark wrong epoch
 wrong = [];
-if ~isempty(rightRESP)
+if ~isempty(wrongRESP)
     n = EEG.trials;
-    rightresp = zeros(1,n);
+    wrong = zeros(1,n);
     for i = 1:n
-        test = ismember(EEG.epoch(1,i).eventtype, rightRESP);
-        if any(test)
-            rightresp(i) = 1;
+        if any(ismember(EEG.epoch(1,i).eventtype, wrongRESP));
+            wrong(i) = 1;
         end
     end
-    wrong = find(~rightresp);% reject wrong response (containing non-responses)
 end
 
 idxRej = union(bad, wrong);
