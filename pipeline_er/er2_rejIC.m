@@ -7,7 +7,10 @@ inputTag = 'ica2';
 outputTag = 'rejIC';
 fileExtension = 'set';
 prefixPosition = 1;
-isTrial = 0;
+hiPassHz = [];
+lowPassHz = 30;
+marks = {};
+timeRange = [-0.2, 4];
 EOG = [];
 
 %%---------
@@ -30,6 +33,21 @@ for i = 1:numel(id)
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
 
+    % hi-pass & low-pass
+    if exist('hiPassHz', 'var') && ~isempty(hiPassHz)
+        EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
+        EEG = eeg_checkset(EEG);
+    end
+    
+    if exist('lowPassHz', 'var') && ~isempthy(lowPassHz)
+        EEG = pop_eegfiltnew(EEG, 0, lowPassHz);
+        EEG = eeg_checkset(EEG);
+    end
+    
+    % epoching
+    EEG = pop_epoch(EEG, marks, timeRange);
+    EEG = eeg_checkset(EEG);
+    
     % identify bad ICs
     try
         EEG = rejBySASICA(EEG, EOG);
