@@ -3,7 +3,7 @@ clear, clc, close all
 
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'ica2';
-outputTag = 'rejIC';
+outputTag = 'rejIC3';
 fileExtension = 'set';
 prefixPosition = 1;
 hiPassHz = [];
@@ -16,9 +16,9 @@ EOG = [];
 inputDir = fullfile(baseDir, inputTag);
 outputDir = fullfile(baseDir, outputTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-[inputFilename, id] = getFileInfo(inputDir, fileExtension, 
+[inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
 
-for i = 1:numel(id)
+for i = 1:10
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -42,10 +42,6 @@ for i = 1:numel(id)
     %     EEG = eeg_checkset(EEG);
     % end
     
-    % epoching
-    EEG = pop_epoch(EEG, marks, timeRange);
-    EEG = eeg_checkset(EEG);
-    
     % identify bad ICs
     try
         EEG = rejBySASICA(EEG, EOG, reallyRej);
@@ -53,6 +49,10 @@ for i = 1:numel(id)
         disp('wrong');
     end
     
+    % epoching
+    EEG = pop_epoch(EEG, marks, timeRange);
+    EEG = eeg_checkset(EEG);
+            
     % save dataset
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     EEG = []; ALLEEG = []; CURRENTSET = [];

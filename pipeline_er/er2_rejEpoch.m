@@ -2,8 +2,8 @@ clear, clc, close all
 % pipeline for preprocessing rej epochs
 
 baseDir = '~/Data/gender-role-emotion-regulation/';
-inputTag = 'ica2';
-outputTag = 'rejEpoch';
+inputTag = 'rejIC3';
+outputTag = 'rejEpoch3';
 fileExtension = 'set';
 prefixPosition = 1;
 thresh = [-100, 100];

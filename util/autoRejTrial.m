@@ -30,7 +30,7 @@ end
 indexRej = find(EEG.reject.rejglobal);
 EEG = pop_rejepoch(EEG, find(EEG.reject.rejglobal) ,0);
 
-whether or not to reject subject
+% whether or not to reject subject
 if ceil(100*length(indexRej)/nTrial) > threshTrialPerSubj
     rejSubj = 1;
 else
