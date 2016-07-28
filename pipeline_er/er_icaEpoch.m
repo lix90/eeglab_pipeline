@@ -44,7 +44,6 @@ for i = 1:numel(id)
     EEG = pop_resample(EEG, sampleRate);
     EEG = eeg_checkset(EEG);
     
-    
     % add channel locations
     EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
@@ -76,8 +75,7 @@ for i = 1:numel(id)
     elseif isempty(offlineRef)
         disp('not to be re-referenced')
     end
-
-    EEG2 = EEG;
+    
     % high pass filtering
     if exist('hiPassHzPreICA', 'var') && ~isempty(hiPassHzPreICA)
         EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
@@ -85,11 +83,9 @@ for i = 1:numel(id)
     end
     
     % reject bad channels
-    EEG2 = pop_eegfiltnew(EEG2, hiPassHz, 0);
-    badChannels = eeg_detect_bad_channels(EEG2);
+    badChannels = eeg_detect_bad_channels(EEG);
     EEG.etc.badChannels = badChannels;
     EEG = pop_select(EEG, 'nochannel', badChannels);
-    EEG2 = [];
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
@@ -105,7 +101,7 @@ for i = 1:numel(id)
     EEG = pop_rmbase(EEG, []);
     
     % reject epochs
-    [EEG, ~] = autoRejTrial(EEG, thresh, prob, kurt, 100, 100);
+    [EEG, ~] = autoRejTrial(EEG, thresh, prob, kurt, 100, 100, 1);
 
     % run ica
     nChan = size(EEG.data, 1);

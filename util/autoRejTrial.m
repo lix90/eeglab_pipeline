@@ -1,4 +1,4 @@
-function [EEG, rejSubj] = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, threshTrialPerSubj)
+function [EEG, rejSubj] = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, threshTrialPerSubj, reallyRejEpoch)
 
 if isempty(thresh)
     lowThresh = [];
@@ -27,12 +27,17 @@ if ~isempty(EEG.reject.rejglobalE) && exist('threshTrialPercentage', 'var')
                            kurtW);
     end
 end
-indexRej = find(EEG.reject.rejglobal);
-EEG = pop_rejepoch(EEG, find(EEG.reject.rejglobal) ,0);
 
-% whether or not to reject subject
-if ceil(100*length(indexRej)/nTrial) > threshTrialPerSubj
-    rejSubj = 1;
+if reallyRejEpoch
+    indexRej = find(EEG.reject.rejglobal);
+    EEG = pop_rejepoch(EEG, find(EEG.reject.rejglobal) ,0);
+
+    % whether or not to reject subject
+    if ceil(100*length(indexRej)/nTrial) > threshTrialPerSubj
+        rejSubj = 1;
+    else
+        rejSubj = 0;
+    end
 else
     rejSubj = 0;
 end

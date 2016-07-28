@@ -1,8 +1,8 @@
 clear, clc, close all
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'icaEpoch2';
-icaTag = 'icaEpoch';
+outputTag = 'icaEpoch2_2';
+icaTag = 'icaEpoch_2';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -16,11 +16,13 @@ hiPassHz = 1;
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-0.2, 4];
 reallyRejIC = 1;
+EOG = [];
 thresh = [-80, 80];
 prob = [6, 3];
 kurt = [6, 3];
 threshTrialPerChan = 20;
 threshTrialPerSubj = 20;
+reallyRejEpoch = 0;
 
 %%--------------
 inputDir = fullfile(baseDir, inputTag);
@@ -34,7 +36,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:numel(id)
+for i = 1:2
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -118,18 +120,19 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG, 'ica');
     
     %% reject ICs
-    try
+
+    % try
         EEG = rejBySASICA(EEG, EOG, reallyRejIC);
-    catch
-        disp('wrong');
-    end
+    % catch
+        % disp('wrong');
+    % end
 
     % baseline-zero again
     EEG = pop_rmbase(EEG, []);
     
     % reject epochs
     [EEG, rejSubj] = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, ...
-                                  threshTrialPerSubj);
+                                  threshTrialPerSubj, reallyRejEpoch);
     
     if rejSubj
         textFile = fullfile(outputDir, sprintf('%s_subjRejected.txt', id{i}));
