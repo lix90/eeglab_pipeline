@@ -3,21 +3,18 @@ clear, clc, close all
 
 baseDir = '~/Data/gender-role-emotion-regulation/';
 % eeglabPath = '';
-inputTag = 'pre2';
-outputTag = 'ica2';
+inputTag = 'pre';
+outputTag = 'ica';
 fileExtension = 'set';
 prefixPosition = 1;
-offlineRef = 'average';
+offlineRef = {'TP9', 'TP10', 'M2'};
 hiPassHz = 1; % for ica
 
 %%---------
-
 inputDir = fullfile(baseDir, inputTag);
 outputDir = fullfile(baseDir, outputTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 [inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
-
-% setEEGLAB;
 
 for i = 1:numel(id)
     

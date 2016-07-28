@@ -1,20 +1,38 @@
 clear, clc, close all
 
-% pipeline for pre-ica preprocessing
+%% pipeline for pre-ica preprocessing
 baseDir = '~/Data/gender-role-emotion-regulation/';
-% eeglabPath = '~/programs/matlabtoolbox/eeglab/';
 inputTag = 'merge';
-outputTag = 'pre';
+outputTag = 'preWhole';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
+
+% pre ICA
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10', 'M2'};
-EOG = {};
 sampleRate = 250;
-hiPassHz = [];
+hiPassHzPreICA = [];
 
+% run ICA
+hiPassHzICA = 1;
+isAverageRef = 0;
+
+% reject ICs
+reallyRejIC = 1;
+hiPassHzPostICA = [];
+lowPassHzPostICA = 30;
+marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
+timeRange = [-0.2, 4];
+EOG = [];
+
+% reject Epochs
+thresh = [-100, 100];
+prob = [6, 3];
+kurt = [6, 3];
+threshTrialPerChan = 20;
+threshTrialPerSubj = 20;
 
 %%--------------
 inputDir = fullfile(baseDir, inputTag);
@@ -27,10 +45,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-% setEEGLAB(eeglabPath);
-
 for i = 1:numel(id)
-% for i = numel(id)
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -43,13 +58,14 @@ for i = 1:numel(id)
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
     
+    %% pre ICA
     % down-sampling
     EEG = pop_resample(EEG, sampleRate);
     EEG = eeg_checkset(EEG);
     
     % high pass filtering
-    if exist('hiPassHz', 'var') && ~isempty(hiPassHz)
-        EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
+    if exist('hiPassHzPreICA', 'var') && ~isempty(hiPassHzPreICA)
+        EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
         EEG = eeg_checkset(EEG);
     end
     
@@ -95,9 +111,46 @@ for i = 1:numel(id)
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
     end
+
+    %% run ica
+    EEG = binicaOnCont(EEG, hiPassHzICA, isAverageRef)
     
-    % save dataset
-    EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
+    %% reject ICs
+    % hi-pass filtering
+    if exist('hiPassHzPostICA', 'var') && ~isempty(hiPassHzPostICA)
+        EEG = pop_eegfiltnew(EEG, hiPassHzPostICA, 0);
+        EEG = eeg_checkset(EEG);
+    end
+    % identify bad ICs
+    try
+        EEG = rejBySASICA(EEG, EOG, reallyRejIC);
+    catch
+        disp('wrong');
+    end
+    % low pass filtering
+    if exist('lowPassHzPostICA', 'var') && ~isempty(lowPassHzPostICA)
+        EEG = pop_eegfiltnew(EEG, 0, lowPassHzPostICA);
+        EEG = eeg_checkset(EEG);
+    end
+    
+    %% reject epochs
+    % epoching
+    EEG = pop_epoch(EEG, marks, timeRange);
+    EEG = eeg_checkset(EEG);
+    
+    % reject epochs
+    [EEG, rejSubj] = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, ...
+                                  threshTrialPerSubj);
+    if rejSubj
+        textFile = fullfile(outputDir, sprintf('%s_subjRejected.txt', id{i}));
+        fid = fopen(textFile, 'w');
+        fprintf(fid, sprintf('subject %s rejected for too many bad epochs\n', ...
+                             id{i}));
+        fclose(fid);
+    else
+        % save dataset
+        EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
+    end
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end

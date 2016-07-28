@@ -1,7 +1,12 @@
 function [EEG, rejSubj] = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, threshTrialPerSubj)
 
-lowThresh = thresh(1);
-upThresh = thresh(2);
+if isempty(thresh)
+    lowThresh = [];
+    upThresh = [];
+elseif length(thresh)==2
+    lowThresh = thresh(1);
+    upThresh = thresh(2);
+end
 probE = prob(1);
 probW = prob(2);
 kurtE = kurt(1);
@@ -35,7 +40,10 @@ end
 function EEG = autoRejEpoch(EEG, lowThresh, upThresh, probE, probW, kurtE, ...
                             kurtW)
 
-EEG = pop_eegthresh(EEG,1,1:EEG.nbchan,lowThresh,upThresh,EEG.xmin,EEG.xmax, 0, 0);
+if ~isempty(lowThresh) && ~isempty(upThresh)
+    EEG = pop_eegthresh(EEG,1,1:EEG.nbchan,lowThresh,upThresh,EEG.xmin,EEG.xmax, ...
+                    0, 0);
+end
 EEG = pop_jointprob(EEG,1,1:EEG.nbchan,probE,probW,0,0);
 EEG = pop_rejkurt(EEG,1,1:EEG.nbchan,kurtE,kurtW,0,0);
 EEG = eeg_rejsuperpose( EEG, 1, 1, 1, 1, 1, 1, 1, 1);

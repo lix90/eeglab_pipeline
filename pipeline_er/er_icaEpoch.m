@@ -1,20 +1,21 @@
 clear, clc, close all
-
-% pipeline for pre-ica preprocessing
 baseDir = '~/Data/gender-role-emotion-regulation/';
-% eeglabPath = '~/programs/matlabtoolbox/eeglab/';
 inputTag = 'merge';
-outputTag = 'pre';
+outputTag = 'icaEpoch';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
+
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10', 'M2'};
-EOG = {};
 sampleRate = 250;
-hiPassHz = [];
-
+hiPassHzPreICA = 1;
+marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
+timeRange = [-0.5, 4];
+thresh = [];
+prob = [6, 3];
+kurt = [6, 3];
 
 %%--------------
 inputDir = fullfile(baseDir, inputTag);
@@ -27,14 +28,10 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-% setEEGLAB(eeglabPath);
-
 for i = 1:numel(id)
-% for i = numel(id)
     
-    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
+    outputFilename = sprintf('%s_%s.mat', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
-    
     if exist(outputFilenameFull, 'file')
         warning('files alrealy exist!')
         continue
@@ -48,8 +45,8 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG);
     
     % high pass filtering
-    if exist('hiPassHz', 'var') && ~isempty(hiPassHz)
-        EEG = pop_eegfiltnew(EEG, hiPassHz, 0);
+    if exist('hiPassHzPreICA', 'var') && ~isempty(hiPassHzPreICA)
+        EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
         EEG = eeg_checkset(EEG);
     end
     
@@ -95,9 +92,34 @@ for i = 1:numel(id)
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
     end
+
+    % epoching
+    EEG = pop_epoch(EEG, marks, timeRange);
+    EEG = eeg_checkset(EEG);
     
-    % save dataset
-    EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
+    % baseline-zero
+    EEG = pop_rmbase(EEG, []);
+    
+    % reject epochs
+    [EEG, ~] = autoRejTrial(EEG, thresh, prob, kurt, 100, 100);
+
+    % run ica
+    nChan = size(EEG.data, 1);
+    if strcmp(offlineRef, 'average')
+        [wts, sph] = binica(EEG.data, 'extended', 1, 'pca', nChan-1);
+    else
+        [wts, sph] = binica(EEG.data, 'extended', 1);
+    end
+
+    iWts = pinv(wts*sph);
+    scaling = repmat(sqrt(mean(iWts.^2))', [1 size(wts,2)]);
+    wts = wts.*scaling;
+
+    x.icawinv = pinv(wts*sph);
+    x.icasphere = sph;
+    x.icaweights = wts;
+    
+    save(outputFilenameFull, 'x');
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
