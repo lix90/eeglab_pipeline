@@ -31,4 +31,19 @@ cfg.focalcomp.enbale = 1;
 
 EEG = eeg_SASICA(EEG, cfg);
 
+rejSASICA = EEG.reject.SASICA;
+rej = rejSASICA.icarejautocorr + rejSASICA.icarejfocalcomp + ...
+      rejSASICA.icarejADJUST;
+
+if cfg.trialfoc.enable
+    rej = rej + rejSASICA.icarejtrialfoc;
+end
+
+if ~isempty(EOG) && isfield(rejSASICA, {'icarejFASTER', 'icarejEOGcorr'})
+    rej = rej + rejSASICA.icarejFASTER + rejSASICA.icarejEOGcorr;
+end
+
+EEG.reject.gcompreject = logical(rej);
+EEG = eeg_checkset(EEG);
+
 
