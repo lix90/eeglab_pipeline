@@ -20,7 +20,7 @@ elseif iscellstr(EOG) && numel(EOG)==2
 end
 
 cfg.MARA.enable = 0;
-cfg.opts.noplot = 0;
+cfg.opts.noplot = 1;
 cfg.chancorr.enable = 0;
 cfg.resvar.enbale = 0;
 cfg.SNR.enable = 0;
