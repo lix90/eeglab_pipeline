@@ -12,6 +12,7 @@ appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10', 'M2'};
 sampleRate = 250;
 hiPassHzPreICA = [];
+hiPassHz = 1;
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-0.2, 4];
 reallyRejIC = 1;
@@ -49,13 +50,7 @@ for i = 1:numel(id)
     % down-sampling
     EEG = pop_resample(EEG, sampleRate);
     EEG = eeg_checkset(EEG);
-    
-    % high pass filtering
-    if exist('hiPassHzPreICA', 'var') && ~isempty(hiPassHzPreICA)
-        EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
-        EEG = eeg_checkset(EEG);
-    end
-    
+        
     % add channel locations
     EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
@@ -87,10 +82,19 @@ for i = 1:numel(id)
         disp('not to be re-referenced')
     end
     
+    EEG2 = EEG;
+    % high pass filtering
+    if exist('hiPassHzPreICA', 'var') && ~isempty(hiPassHzPreICA)
+        EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
+        EEG = eeg_checkset(EEG);
+    end
+    
     % reject bad channels
-    badChannels = eeg_detect_bad_channels(EEG);
+    EEG2 = pop_eegfiltnew(EEG2, hiPassHz, 0);
+    badChannels = eeg_detect_bad_channels(EEG2);
     EEG.etc.badChannels = badChannels;
     EEG = pop_select(EEG, 'nochannel', badChannels);
+    EEG2 = [];
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
