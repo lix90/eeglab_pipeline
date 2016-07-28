@@ -1,4 +1,4 @@
-function EEG = rejBySASICA(EEG, EOG)
+function EEG = rejBySASICA(EEG, EOG, reallyRej)
 % EOG: {'VEO', 'HEO'}
 
 cfg = SASICA('getdefs');
@@ -46,4 +46,7 @@ end
 EEG.reject.gcompreject = logical(rej);
 EEG = eeg_checkset(EEG);
 
-
+if reallyRej
+    EEG = pop_subcomp(EEG, [], 0);
+    EEG = eeg_checkset(EEG);
+end
