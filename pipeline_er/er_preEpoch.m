@@ -1,8 +1,8 @@
 clear, clc, close all
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'icaEpoch2_2';
-icaTag = 'icaEpoch_2';
+outputTag = 'preEpoch';
+icaTag = 'icaEpoch';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -14,14 +14,14 @@ sampleRate = 250;
 hiPassHzPreICA = [];
 hiPassHz = 1;
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
-timeRange = [-0.2, 4];
-reallyRejIC = 1;
+timeRange = [-1, 5];
+reallyRejIC = 0;
 EOG = [];
 nTrialOrig = 200;
-thresh = [-80, 80];
+thresh = [];
 prob = [6, 3];
 kurt = [6, 3];
-threshTrialPerChan = 20;
+threshTrialPerChan = 100;
 threshTrialPerSubj = 20;
 reallyRejEpoch = 0;
 
