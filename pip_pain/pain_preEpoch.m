@@ -13,14 +13,15 @@ sampleRate = 250;
 hiPassHzPreICA = [];
 hiPassHz = 1;
 marksOld = {'S 11', 'S 12',...
-             'S 21', 'S 22',...
-             'S 31', 'S 32'};
+            'S 21', 'S 22',...
+            'S 31', 'S 32'};
 marksNew = {'pos_pain', 'pos_nopain', ...
             'neg_nopain', 'neg_pain', ...
             'neu_nopain', 'neu_pain' };
 timeRange = [-1, 2];
 reallyRejIC = 1;
 EOG = [];
+nTrialOrig = 192;
 thresh = [-80, 80];
 prob = [6, 3];
 kurt = [6, 3];
@@ -98,6 +99,11 @@ for i = 1:2
     % reject bad channels
     EEG2 = pop_eegfiltnew(EEG2, hiPassHz, 0);
     badChannels = eeg_detect_bad_channels(EEG2);
+    % if ~isempty(EOG)
+    %     labels_tmp = {EEG2.chanlocs.labels};
+    %     strBadChannels = labels_tmp(badChannels);
+    %     badChannels = setdiff(EOG, strBadChannels);
+    % end
     EEG.etc.badChannels = badChannels;
     EEG = pop_select(EEG, 'nochannel', badChannels);
     EEG2 = [];
@@ -126,6 +132,9 @@ for i = 1:2
     EEG.icaweights = x.icaweights;
     EEG = eeg_checkset(EEG, 'ica');
     
+    %% reject epoch before reject ICs
+    EEG = autoRejTrial(EEG, [], [6,3], [6,3], 100, 1);
+    
     %% reject ICs
     try
         EEG = rejBySASICA(EEG, EOG, reallyRejIC);
@@ -135,12 +144,12 @@ for i = 1:2
 
     % baseline-zero again
     EEG = pop_rmbase(EEG, []);
-    
     % reject epochs
-    [EEG, rejSubj] = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, ...
-                                  threshTrialPerSubj, reallyRejEpoch);
-    
-    if rejSubj
+    EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, ...
+                       reallyRejEpoch);
+    % whether or not reject subject by percentage of trials rejected
+    rej_or_not = rejSubj(EEG, threshTrialPerSubj, nTrialOrig);
+    if rej_or_not
         textFile = fullfile(outputDir, sprintf('%s_subjRejected.txt', id{i}));
         fid = fopen(textFile, 'w');
         fprintf(fid, sprintf('subject %s rejected for too many bad epochs\n', ...
