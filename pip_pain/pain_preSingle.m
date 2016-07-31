@@ -6,12 +6,12 @@ inputTag = 'preEpoch';
 outputTag = 'single';
 fileExtension = 'set';
 prefixPosition = 1;
-marks = {'pos_Pain', 'pos_nopain', ...
+marks = {'pos_pain', 'pos_nopain', ...
          'neg_nopain', 'neg_pain', ...
          'neu_nopain', 'neu_pain' };;
 timeRange = [-0.2 1];
 threshTrialPerSubj = 20; % 20%
-rejectTrial = 1;
+useCSD = 1;
 
 %---------------------
 inputDir = fullfile(baseDir, inputTag);
@@ -30,15 +30,23 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG);
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'gui','off', 'overwrite', ...
                                          'on');
-    %% csd
-    % disp('laplacian');
-    % laplac = eeg_laplac(EEG, 1);
-    % laplac = reshape(laplac, [size(EEG.data)]);
-    % EEG.data = laplac;
-    % EEG = eeg_checkset(EEG);
-    % [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'gui','off', 'overwrite', ...
-    %                                      'on');
+
+    % inpterpolate channels
+    EEG = pop_interp(EEG, EEG.etc.origchanlocs, 'spherical');
+    EEG = eeg_checkset(EEG);
     
+    %% csd
+    if useCSD
+        if i==1
+            [G, H] = getGHforEEGLAB(EEG);
+        end
+        if exist('G', 'var') && exist('H', 'var')
+            EEG.data = getCSDforEEGLAB(EEG, G, H);
+            EEG = eeg_checkset(EEG); 
+        end
+    end
+    
+    %% seperate dataset into single dataset by each conditions
     for j = 1:numel(marks)
         filename = strcat(id{i}, '_', marks{j});
         outputFilenameFull = fullfile(outputDir, filename);
