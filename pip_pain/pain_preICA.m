@@ -11,7 +11,7 @@ offlineRef = {'TP9', 'TP10'};
 sampleRate = 250;
 marksOld = {'S 11', 'S 12',...
             'S 21', 'S 22',...
-             'S 31', 'S 32'};
+            'S 31', 'S 32'};
 timeRange = [-1, 2];
 
 %%--------------
