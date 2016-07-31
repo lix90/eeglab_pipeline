@@ -1,7 +1,7 @@
 clear, clc, close all
-baseDir = '~/Data/gender-role-emotion-regulation/';
+baseDir = '~/data/pain/';
 inputTag = 'merge';
-outputTag = 'preEpoch';
+outputTag = 'preEpoch2';
 icaTag = 'preICA';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
@@ -27,7 +27,7 @@ prob = [6, 3];
 kurt = [6, 3];
 threshTrialPerChan = 20;
 threshTrialPerSubj = 20;
-reallyRejEpoch = 1;
+reallyRejEpoch = 0;
 
 %%--------------
 inputDir = fullfile(baseDir, inputTag);
@@ -41,7 +41,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:2
+for i = 1:numel(id)
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
