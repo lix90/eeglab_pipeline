@@ -1,17 +1,16 @@
 clear, clc, close all
-baseDir = '~/Data/gender-role-emotion-regulation/';
+baseDir = '~/Data/lqs_gambling/';
 inputTag = 'merge';
 outputTag = 'preICA';
 fileExtension = {'set', 'eeg'};
-prefixPosition = 1;
+prefixPosition = 2;
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10'};
 sampleRate = 250;
-marksOld = {'S 11', 'S 12',...
-            'S 21', 'S 22',...
-            'S 31', 'S 32'};
+marksOld = {'no_neg_big'  'no_neg_small'  'no_pos_big'  'no_pos_small'...
+            'yes_neg_big'  'yes_neg_mall'  'yes_pos_big'  'yes_pos_small'  };
 timeRange = [-1, 2];
 
 %%--------------
@@ -89,14 +88,14 @@ for i = 1:numel(id)
     end
 
     % epoching
-    EEG = pop_epoch(EEG, marksOld, timeRange);
+    EEG = pop_epoch(EEG, marksOld, timeRange, 'epochinfo', 'yes');
     EEG = eeg_checkset(EEG);
     
     % baseline-zero
     EEG = pop_rmbase(EEG, []);
     
     % reject epochs
-    [EEG, ~] = autoRejTrial(EEG, [], [6,3], [6,3], 100, 100, 1);
+    EEG = autoRejTrial(EEG, [], [6,3], [6,3], 100, 1);
 
     % run ica
     nChan = size(EEG.data, 1);
