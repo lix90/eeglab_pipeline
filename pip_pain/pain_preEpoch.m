@@ -70,7 +70,7 @@ for i = 1:numel(id)
 
     EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
-    EEG.etc.origChanlocs = EEG.chanlocs;
+
     
     labels = {EEG.chanlocs.labels};
     % re-reference if necessary
@@ -95,7 +95,8 @@ for i = 1:numel(id)
         EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
         EEG = eeg_checkset(EEG);
     end
-    
+
+    EEG.etc.origChanlocs = EEG.chanlocs;
     % reject bad channels
     EEG2 = pop_eegfiltnew(EEG2, hiPassHz, 0);
     badChannels = eeg_detect_bad_channels(EEG2);

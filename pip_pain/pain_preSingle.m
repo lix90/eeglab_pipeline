@@ -1,19 +1,22 @@
 clear, clc, close all
 
 % set directory
-baseDir = '~/Data/moodPain_final/';
+baseDir = '~/data/pain/';
 inputTag = 'preEpoch';
 outputTag = 'single';
 fileExtension = 'set';
 prefixPosition = 1;
 marks = {'pos_pain', 'pos_nopain', ...
          'neg_nopain', 'neg_pain', ...
-         'neu_nopain', 'neu_pain' };;
-timeRange = [-0.2 1];
+         'neu_nopain', 'neu_pain' };
+timeRange = [-1 2];
 threshTrialPerSubj = 20; % 20%
-useCSD = 1;
+useCSD = 0;
 
 %---------------------
+if useCSD
+    outputTag = [outputTag, 'CSD'];
+end
 inputDir = fullfile(baseDir, inputTag);
 outputDir = fullfile(baseDir, outputTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
@@ -25,14 +28,17 @@ for i = 1:numel(id)
     fprintf('Loading (%i/%i %s)\n', i, length(id), inputFilename{i});
     [ALLEEG, EEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
     
-    % reject components
+    % reject
     EEG = pop_subcomp(EEG, [], 0);
+    EEG = eeg_checkset(EEG);
+    
+    EEG = autoRejTrial(EEG, [-80, 80], [6,3], [6,3], 100, 1);
     EEG = eeg_checkset(EEG);
     [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'gui','off', 'overwrite', ...
                                          'on');
-
     % inpterpolate channels
-    EEG = pop_interp(EEG, EEG.etc.origchanlocs, 'spherical');
+    ind = ~ismember({EEG.etc.origChanlocs.labels}, {'TP9', 'TP10'});
+    EEG = pop_interp(EEG, EEG.etc.origChanlocs(ind), 'spherical');
     EEG = eeg_checkset(EEG);
     
     %% csd

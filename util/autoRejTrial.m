@@ -42,4 +42,8 @@ function EEG = autoRejEpoch(EEG, lowThresh, upThresh, probE, probW, kurtE, ...
     end
     EEG = pop_jointprob(EEG,1,1:EEG.nbchan,probE,probW,0,0);
     EEG = pop_rejkurt(EEG,1,1:EEG.nbchan,kurtE,kurtW,0,0);
+    if ~isfield(EEG.reject, 'rejmanual')
+        EEG.reject.rejmanual = zeros(size(EEG.reject.rejkurt));
+        EEG.reject.rejmanualE = zeros(size(EEG.reject.rejkurtE));
+    end
     EEG = eeg_rejsuperpose( EEG, 1, 1, 1, 1, 1, 1, 1, 1);
