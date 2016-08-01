@@ -22,7 +22,7 @@ thresh = [];
 prob = [6, 3];
 kurt = [6, 3];
 threshTrialPerChan = 100;
-threshTrialPerSubj = 20;
+threshTrialPerSubj = 100;
 reallyRejEpoch = 0;
 
 %%--------------
@@ -37,7 +37,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:2
+for i = 1:numel(id)
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -69,6 +69,7 @@ for i = 1:2
     EEG.etc.origChanlocs = EEG.chanlocs;
     
     labels = {EEG.chanlocs.labels};
+
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         offlineRefReal = intersect(labels, offlineRef);
@@ -106,7 +107,7 @@ for i = 1:2
     end
 
     % epoching
-    EEG = pop_epoch(EEG, marks, timeRange);
+    EEG = pop_epoch(EEG, natsort(marks), timeRange);
     EEG = eeg_checkset(EEG);
     
     % baseline-zero
@@ -120,9 +121,6 @@ for i = 1:2
     EEG.icaweights = x.icaweights;
     EEG = eeg_checkset(EEG, 'ica');
     
-    %% reject epoch before reject ICs
-    EEG = autoRejTrial(EEG, [], prob, kurt, 100, 1);
-    
     %% reject ICs
     try
         EEG = rejBySASICA(EEG, EOG, reallyRejIC);
@@ -131,10 +129,14 @@ for i = 1:2
     end
 
     % baseline-zero again
-    EEG = pop_rmbase(EEG, []);
+    if reallyRejIC
+        EEG = pop_rmbase(EEG, []);
+    end
+    
     % reject epochs
     EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, ...
                        reallyRejEpoch);
+    
     % whether or not reject subject by percentage of trials rejected
     rej_or_not = rejSubj(EEG, threshTrialPerSubj, nTrialOrig);
     if rej_or_not
@@ -144,6 +146,7 @@ for i = 1:2
                              id{i}));
         fclose(fid);
     else
+    
         % save dataset
         EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     end
