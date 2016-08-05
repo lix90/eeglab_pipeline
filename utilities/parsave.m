@@ -1,7 +1,7 @@
-function parsave(x, data)
+function parsave(x, y)
 
-vname = @(x) inputname(1);
-s = vname(data);
-save(x, s);
+    vname = @(x) inputname(1);
+    s = vname(y);
+    save(x, s);
 
 end

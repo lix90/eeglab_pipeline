@@ -1,7 +1,7 @@
 clear, clc, close all
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'preICA';
+outputTag = 'preICA2';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -16,6 +16,8 @@ lowpass = 40;
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-0.5, 4];
 
+thresh_chan = 0.05;
+reject = 1;
 thresh_param.low_thresh = -300;
 thresh_param.up_thresh = 300;
 trends_param.slope = 200;
@@ -35,7 +37,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:numel(id)
+for i = 1
     
     outputFilename = sprintf('%s_%s.mat', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -137,7 +139,7 @@ for i = 1:numel(id)
     ica.info = info;
     ica.info.badchans = badchans;
     
-    save(outputFilenameFull, 'ica');
+    parsave(outputFilenameFull, ica);
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
