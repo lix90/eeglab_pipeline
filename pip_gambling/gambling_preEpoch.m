@@ -1,27 +1,27 @@
 clear, clc, close all
-baseDir = '~/Data/gender-role-emotion-regulation/';
+baseDir = '~/Data/lqs_gambling/';
 inputTag = 'merge';
 outputTag = 'preEpoch';
-icaTag = 'icaEpoch';
-fileExtension = {'set', 'eeg'};
-prefixPosition = 1;
-
+icaTag = 'preICA';
+fileExtension = 'set';
+prefixPosition = 2;
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
-offlineRef = {'TP9', 'TP10', 'M2'};
+offlineRef = {'TP9', 'TP10'};
 sampleRate = 250;
 hiPassHzPreICA = [];
 hiPassHz = 1;
-marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
-timeRange = [-1, 5];
+marks = {'no_neg_big'  'no_neg_small'  'no_pos_big'  'no_pos_small'...
+         'yes_neg_big'  'yes_neg_mall'  'yes_pos_big'  'yes_pos_small'};
+timeRange = [-1, 2];
 reallyRejIC = 0;
 EOG = [];
-nTrialOrig = 200;
+nTrialOrig = 400;
 thresh = [];
 prob = [6, 3];
 kurt = [6, 3];
-threshTrialPerChan = 100;
+threshTrialPerChan = 20;
 threshTrialPerSubj = 20;
 reallyRejEpoch = 0;
 
@@ -37,7 +37,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:2
+for i = 1:numel(id)
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -63,7 +63,7 @@ for i = 1:2
     else
         rmChansReal = rmChans;
     end
-        
+
     EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
     EEG.etc.origChanlocs = EEG.chanlocs;
@@ -95,6 +95,11 @@ for i = 1:2
     % reject bad channels
     EEG2 = pop_eegfiltnew(EEG2, hiPassHz, 0);
     badChannels = eeg_detect_bad_channels(EEG2);
+    % if ~isempty(EOG)
+    %     labels_tmp = {EEG2.chanlocs.labels};
+    %     strBadChannels = labels_tmp(badChannels);
+    %     badChannels = setdiff(EOG, strBadChannels);
+    % end
     EEG.etc.badChannels = badChannels;
     EEG = pop_select(EEG, 'nochannel', badChannels);
     EEG2 = [];
@@ -105,8 +110,11 @@ for i = 1:2
         EEG = eeg_checkset(EEG);
     end
 
+    % change events
+    % EEG = changeEvent(EEG, marksOld, marksNew);
+    
     % epoching
-    EEG = pop_epoch(EEG, marks, timeRange);
+    EEG = pop_epoch(EEG, marks, timeRange, 'epochinfo', 'yes');
     EEG = eeg_checkset(EEG);
     
     % baseline-zero
@@ -121,7 +129,7 @@ for i = 1:2
     EEG = eeg_checkset(EEG, 'ica');
     
     %% reject epoch before reject ICs
-    EEG = autoRejTrial(EEG, [], prob, kurt, 100, 1);
+    EEG = autoRejTrial(EEG, [], [6,3], [6,3], 100, 1);
     
     %% reject ICs
     try
