@@ -12,9 +12,9 @@ offlineRef = {'TP9', 'TP10', 'M2'};
 
 sampleRate = 250;
 hipass = 1;
-lowpass = 40;
+lowpass = [];
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
-timeRange = [-0.5, 4];
+timeRange = [-1, 5];
 
 thresh_chan = 0.05;
 reject = 1;
@@ -132,6 +132,11 @@ for i = 1
     iWts = pinv(wts*sph);
     scaling = repmat(sqrt(mean(iWts.^2))', [1 size(wts,2)]);
     wts = wts.*scaling;
+    
+%     EEG.icawinv = pinv(wts*sph);
+%     EEG.icasphere = sph;
+%     EEG.icaweights = wts;
+%     EEG = eeg_checkset(EEG);
 
     ica.icawinv = pinv(wts*sph);
     ica.icasphere = sph;
@@ -143,3 +148,4 @@ for i = 1
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
+eeglab redraw;
