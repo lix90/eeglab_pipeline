@@ -1,4 +1,4 @@
-function EEG = DetectrejDetectrejDetectEpoch(EEG, thresh_param, trends_param, spectra_param)
+function EEG = rejDetectEpoch(EEG, thresh_param, trends_param, spectra_param)
 
 if ~isempty(thresh_param) && all(isfield(thresh_param, {'low_thresh', 'up_thresh'}))
     % find abnormal values
