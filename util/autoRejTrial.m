@@ -1,4 +1,8 @@
-function EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, reallyRejEpoch)
+function EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, reject)
+
+% abnormal values
+% abnormal trends
+% abnormal spectra
 
     if isempty(thresh)
         lowThresh = [];
@@ -28,7 +32,7 @@ function EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, reallyR
         end
     end
 
-    if reallyRejEpoch
+    if reject
         indexRej = find(EEG.reject.rejglobal);
         EEG = pop_rejepoch(EEG, indexRej ,0);
     end
