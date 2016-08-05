@@ -37,7 +37,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:numel(id)
+for i = [1:100, 102:numel(id)]
     
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -107,11 +107,12 @@ for i = 1:numel(id)
     end
 
     % epoching
-    EEG = pop_epoch(EEG, natsort(marks), timeRange);
+    EEG = pop_epoch(EEG, natsort(marks), timeRange, 'epochinfo', 'yes');
     EEG = eeg_checkset(EEG);
     
     % baseline-zero
     EEG = pop_rmbase(EEG, []);
+    EEG = eeg_checkset(EEG);
     
     % load icamat
     icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
