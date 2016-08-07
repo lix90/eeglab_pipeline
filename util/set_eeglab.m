@@ -1,4 +1,4 @@
-function setEEGLAB(eeglabPath)
+function set_eeglab(eeglabPath)
 
 % add eeglab path
 addpath(genpath(eeglabPath));

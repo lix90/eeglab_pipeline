@@ -1,4 +1,4 @@
-function rej = rejByRT(EEG, resp, timewin)
+function rej = rej_rt(EEG, resp, timewin)
 
 if ~iscellstr(resp)
     disp('resp must be cellstr');

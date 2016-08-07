@@ -1,5 +1,5 @@
-function EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef)
-
+function EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef)
+    
 % add channel locations & recover online reference 
 % e.g. EEG = addChanLoc(EEG, 'Spherical', 'FCz', true)
     

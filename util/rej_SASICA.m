@@ -1,4 +1,4 @@
-function EEG = rejBySASICA(EEG, EOG, reallyRej)
+function EEG = rej_SASICA(EEG, EOG, reallyRej)
 % EOG: {'VEO', 'HEO'}
 
 cfg = SASICA('getdefs');

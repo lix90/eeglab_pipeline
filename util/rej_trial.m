@@ -1,4 +1,4 @@
-function EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, reject)
+function EEG = rej_trial(EEG, thresh, prob, kurt, threshTrialPerChan, reject)
 
 % abnormal values
 % abnormal trends

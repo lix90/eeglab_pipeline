@@ -1,4 +1,4 @@
-function data = getCSDforEEGLAB(EEG, G, H)
+function data = get_csd(EEG, G, H)
 
 data = CSD(single(EEG.data),G,H);
 % compute CSD for <channels-by-samples-by-epochs> 3-D data matrix

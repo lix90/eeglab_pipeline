@@ -1,4 +1,4 @@
-function rej = rejWrong(EEG, rightevent)
+function rej = rej_wrong(EEG, rightevent)
 
 if nargin<2
 	disp('parameters are not enough')

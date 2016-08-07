@@ -1,7 +1,7 @@
 clear, clc, close all
-baseDir = '~/Data/gender-role-emotion-regulation/';
+baseDir = '~/Desktop/test_er/';
 inputTag = 'merge';
-outputTag = 'preICA2';
+outputTag = 'preICA';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -17,7 +17,7 @@ marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-1, 5];
 
 thresh_chan = 0.05;
-reject = 1;
+reject = 0;
 thresh_param.low_thresh = -300;
 thresh_param.up_thresh = 300;
 trends_param.slope = 200;
@@ -31,7 +31,7 @@ inputDir = fullfile(baseDir, inputTag);
 outputDir = fullfile(baseDir, outputTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
-[inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
+[inputFilename, id] = get_fileinfo(inputDir, fileExtension, prefixPosition);
 
 rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
@@ -45,11 +45,10 @@ for i = 1
         warning('files alrealy exist!')
         continue
     end
-
     ica = struct();
     
     % import dataset
-    [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
+    [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
     
     % high pass filtering
     if exist('hipass', 'var') && ~isempty(hipass)
@@ -62,7 +61,7 @@ for i = 1
     end
     
     % add channel locations
-    EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
+    EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
     % remove channels
     if ~strcmp(offlineRef, 'average')
@@ -73,10 +72,8 @@ for i = 1
         
     EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
-    EEG.etc.origChanlocs = EEG.chanlocs;
     
     labels = {EEG.chanlocs.labels};
-    
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         offlineRefReal = intersect(labels, offlineRef);
@@ -92,7 +89,8 @@ for i = 1
     elseif isempty(offlineRef)
         disp('not to be re-referenced')
     end
-    
+
+    orig_chanlocs = EEG.chanlocs;
     % reject bad channels
     badChannels = eeg_detect_bad_channels(EEG);
     
@@ -118,34 +116,21 @@ for i = 1
     EEG = eeg_checkset(EEG);
     
     % reject epochs
-    [EEG, info] = rejEpochAuto(EEG, thresh_param, trends_param, spectra_param, ...
-                               thresh_chan, reject);
+    [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
+                                 thresh_chan, reject);
     
     % run ica
-    nChan = size(EEG.data, 1);
     if strcmp(offlineRef, 'average')
-        [wts, sph] = binica(EEG.data, 'extended', 1, 'pca', nChan-1);
+        isavg = 1;
     else
-        [wts, sph] = binica(EEG.data, 'extended', 1);
+        isavg = 0;
     end
-
-    iWts = pinv(wts*sph);
-    scaling = repmat(sqrt(mean(iWts.^2))', [1 size(wts,2)]);
-    wts = wts.*scaling;
-    
-%     EEG.icawinv = pinv(wts*sph);
-%     EEG.icasphere = sph;
-%     EEG.icaweights = wts;
-%     EEG = eeg_checkset(EEG);
-
-    ica.icawinv = pinv(wts*sph);
-    ica.icasphere = sph;
-    ica.icaweights = wts;
+    [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, isavg);
     ica.info = info;
     ica.info.badchans = badchans;
-    
+    ica.info.orig_chanlocs = orig_chanlocs;
     parsave(outputFilenameFull, ica);
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
-eeglab redraw;
+% eeglab redraw;

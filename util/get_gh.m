@@ -1,4 +1,4 @@
-function [G, H] = getGHforEEGLAB(EEG);
+function [G, H] = get_gh(EEG);
 
 % Get channel labels
 labels = {EEG.chanlocs.labels};

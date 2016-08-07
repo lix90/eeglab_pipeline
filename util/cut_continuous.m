@@ -1,4 +1,6 @@
-function EEG = cutRawdata(EEG, epochInterval)
+% cut continous data into segments
+% epochInterval: s(econd)
+function EEG = cut_continuous(EEG, epochInterval)
 
 if ~isnumeric(epochInterval)
     disp('epoch interval must be numeric');
@@ -8,13 +10,13 @@ trials = floor(EEG.pnts/(EEG.srate*epochInterval));
 trialLength = epochInterval*EEG.srate;
 
 eegdata = EEG.data;
-nbchan = size(EEG.data, 1);
+nbchan = EEG.nbchan;
 EEG.data = zeros(nbchan, trialLength, trials);
 
 % cut tails
-EEG.data(:, trials*trialLength+1:end) = [];
+eegdata(:, trials*trialLength+1:end) = [];
 % reshape matrix into channel * time * trial
-EEG.data = reshape(EEG.data, [nbchan, trialLength, trials]);
+EEG.data = reshape(eegdata, [nbchan, trialLength, trials]);
 
 % for j = 1:trials
 %    EEG.data(:,:,j) = eegdata(:,((j-1)*trialLength+1):j*trialLength);

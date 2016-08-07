@@ -1,4 +1,4 @@
-function EEG = changeEvent(EEG, from, to)
+function EEG = change_event(EEG, from, to)
 % change events names as you like before epoching
 % parameters:
 % 	from: events to change (cell array)

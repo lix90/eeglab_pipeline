@@ -1,10 +1,10 @@
-function [EEG, info] = rejEpochAuto(EEG, thresh_param, trends_param, spectra_param, threshChan, reject)
+function [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, threshChan, reject)
 
 info.orig_ntrial = EEG.trials;
 info.orig_chanlocs = EEG.chanlocs;
 % identify epoch
 fprintf('start: the 1st automatical bad epoch detecting\n');
-EEG = rejDetectEpoch(EEG, thresh_param, trends_param, spectra_param);
+EEG = rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param);
 if ~isempty(EEG.reject.rejglobalE) && exist('threshChan', 'var')
     perBadEpochInChannels = sum(EEG.reject.rejglobalE, 2)/EEG.trials;
     rej_ch = find(perBadEpochInChannels > threshChan);
@@ -14,7 +14,7 @@ if ~isempty(EEG.reject.rejglobalE) && exist('threshChan', 'var')
         EEG = eeg_checkset(EEG);
         % identify epoch again
         fprintf('start: the 2nd automatical bad epoch rejecting\n');
-        EEG = rejDetectEpoch(EEG, thresh_param, trends_param, spectra_param);        
+        EEG = rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param);        
     end
 end
 

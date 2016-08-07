@@ -1,4 +1,4 @@
-function EEG = binicaOnCont(EEG, hiPassHz, isAverageRef)
+function EEG = binica_continuous(EEG, hiPassHz, isAverageRef)
 
 
 % clean data

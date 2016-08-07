@@ -1,4 +1,4 @@
-function [filename, id] = get_fileinfo(indir, ext, varargin)
+function [filename, id] = get_fileinfo(indir, ext, pos)
 
 % if varargin
 % 	disp('the least number of input parameters is two')
@@ -11,7 +11,6 @@ case 1
 	tmp = dir(fullfile(indir, strcat('*', ext)));
 	filename = natsort({tmp.name});
 case 2
-  pos = varargin{1};
 	tmp = dir(fullfile(indir, strcat('*', ext)));
 	filename = natsort({tmp.name});
 	id = get_prefix(filename, pos);

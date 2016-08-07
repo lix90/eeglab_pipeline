@@ -1,4 +1,4 @@
-function rej_or_not = rejSubj(EEG, threshPercentage, nOrigTrial)
+function rej_or_not = rej_subj(EEG, threshPercentage, nOrigTrial)
 
 recentNumTrial = EEG.trials;
 percent = 100*(1-recentNumTrial/nOrigTrial);

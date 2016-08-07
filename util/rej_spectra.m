@@ -1,6 +1,6 @@
 % compute spectrum and reject artifacts
 % -------------------------------------
-function [specdata, Irej, Erej, freqs ] = rejSpec(data, specdata, elecrange, srate, negthresh, posthresh, startfreq, endfreq, method);
+function [specdata, Irej, Erej, freqs ] = rej_spectra(data, specdata, elecrange, srate, negthresh, posthresh, startfreq, endfreq, method);
 
 % compute the fft if necessary - old version
 if isempty(specdata)

@@ -1,4 +1,4 @@
-function [filename, id] = getFileInfo(inputDir, ext, pos)
+function [filename, id] = get_fileinfo(inputDir, ext, pos)
 % inputDir = input directory
 % ext = extension of files; str or cellstr
 % pos = position where filenames are to be seperated

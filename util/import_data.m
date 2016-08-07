@@ -1,11 +1,13 @@
-function [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, filename)
+function [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, filename)
 
 % wrapper function for import eeg data in eeglab easily
+% set, eeg, cnt
 % written by lix 
 % if run into problems, please contact its.lix@outlook.com
 
 
-[ALLEEG EEG CURRENTSET ALLCOM] = eeglab;
+% [ALLEEG EEG CURRENTSET ALLCOM] = eeglab;
+ALLEEG = []; EEG = []; CURRENTSET = [];
 fileExtension = filename(end-2:end);
 % load dataset
 switch fileExtension
@@ -16,7 +18,7 @@ switch fileExtension
   case 'cnt'
     EEG = pop_loadcnt(fullfile(inputDir, filename), 'keystroke', 'on');
   otherwise
-    disp('file extension does not match');
+    disp('file extension is not supported');
     return
 end
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 0, ...

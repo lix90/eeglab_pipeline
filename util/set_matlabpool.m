@@ -1,4 +1,4 @@
-function setMatlabPool(poolSize)
+function set_matlabpool(poolSize)
 
 if matlabpool('size') == 0
     matlabpool('local', poolSize);

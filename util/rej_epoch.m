@@ -1,4 +1,4 @@
-function EEG = rejEpoch(EEG, wrongRESP, varargin)
+function EEG = rej_epoch(EEG, wrongRESP, varargin)
 
 % wrongRESP
 % wrong
@@ -22,7 +22,7 @@ if strcmpi(chanorcomp, 'channels') % chan
 	if isempty(EEG.reject.rejthresh); EEG.reject.rejthresh = m; end
 	if isempty(EEG.reject.rejconst); EEG.reject.rejconst = m; end
 	rejall = EEG.reject.rejmanual + EEG.reject.rejjp + ...
-	 EEG.reject.rejkurt + EEG.reject.rejthresh + EEG.reject.rejconst;
+             EEG.reject.rejkurt + EEG.reject.rejthresh + EEG.reject.rejconst;
 elseif strcmpi(chanorcomp, 'components') % icaact
 	if isempty(EEG.reject.icarejmanual); EEG.reject.icarejmanual = m; end
 	if isempty(EEG.reject.icarejjp); EEG.reject.icarejjp = m; end
@@ -30,7 +30,7 @@ elseif strcmpi(chanorcomp, 'components') % icaact
 	if isempty(EEG.reject.icarejthresh); EEG.reject.icarejthresh = m; end
 	if isempty(EEG.reject.icarejconst); EEG.reject.icarejconst = m; end
 	rejall = EEG.reject.icarejmanual + EEG.reject.icarejjp + ...
-	 EEG.reject.icarejkurt + EEG.reject.icarejthresh + EEG.reject.icarejconst;
+             EEG.reject.icarejkurt + EEG.reject.icarejthresh + EEG.reject.icarejconst;
 else
 	disp('the alternatives of reject epoch can only be channels or components');
 	return
