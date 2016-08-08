@@ -1,5 +1,5 @@
 clear, clc, close all
-baseDir = '~/Desktop/test_er/';
+baseDir = '~/Data/';
 inputTag = 'merge';
 outputTag = 'preICA';
 fileExtension = {'set', 'eeg'};
@@ -16,13 +16,17 @@ lowpass = [];
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-1, 5];
 
+flatline = 5;
+mincorr = 0.5;
+linenoisy = 4;
+
 thresh_chan = 0.05;
-reject = 0;
+reject = 1;
 thresh_param.low_thresh = -300;
 thresh_param.up_thresh = 300;
 trends_param.slope = 200;
 trends_param.r2 = 0.2;
-spectra_param.threshold = [-35, 35];
+spectra_param.threshold = [-30, 30];
 spectra_param.freqlimits = [20 40];
 
 
@@ -37,7 +41,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1
+for i = 1:numel(id)
     
     outputFilename = sprintf('%s_%s.mat', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
@@ -55,6 +59,7 @@ for i = 1
         EEG = pop_eegfiltnew(EEG, hipass, 0);
         EEG = eeg_checkset(EEG);
     end
+    
     % low pass filtering
     if exist('lowpass', 'var') && ~isempty(lowpass)
         EEG = pop_eegfiltnew(EEG, 0, lowpass);
@@ -92,11 +97,13 @@ for i = 1
 
     orig_chanlocs = EEG.chanlocs;
     % reject bad channels
-    badChannels = eeg_detect_bad_channels(EEG);
-    
-    labels = {EEG.chanlocs.labels};
-    badchans = labels(badChannels);
-    EEG = pop_select(EEG, 'nochannel', badChannels);
+    % badChannels = eeg_detect_bad_channels(EEG);
+    EEG = rej_badchan(EEG, flatline, mincorr, linenoisy);
+    badchans = {orig_chanlocs.labels};
+    badchans = badchans(~EEG.etc.clean_channel_mask);
+    % labels = {EEG.chanlocs.labels};
+    % badchans = labels(badChannels);
+    % EEG = pop_select(EEG, 'nochannel', badChannels);
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
