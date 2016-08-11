@@ -22,11 +22,11 @@ linenoisy = 4;
 
 thresh_chan = 0.05;
 reject = 1;
-thresh_param.low_thresh = -300;
-thresh_param.up_thresh = 300;
+thresh_param.low_thresh = -500;
+thresh_param.up_thresh = 500;
 trends_param.slope = 200;
 trends_param.r2 = 0.2;
-spectra_param.threshold = [-30, 30];
+spectra_param.threshold = [-35, 35];
 spectra_param.freqlimits = [20 40];
 
 
@@ -63,6 +63,7 @@ for i = 1:numel(id)
     % low pass filtering
     if exist('lowpass', 'var') && ~isempty(lowpass)
         EEG = pop_eegfiltnew(EEG, 0, lowpass);
+        EEG = eeg_checkset(EEG);
     end
     
     % add channel locations
