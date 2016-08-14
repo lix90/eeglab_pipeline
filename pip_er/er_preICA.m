@@ -1,7 +1,7 @@
 clear, clc, close all
-baseDir = '~/Data/';
+baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'preICA';
+outputTag = 'preICA2';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -17,16 +17,16 @@ marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-1, 5];
 
 flatline = 5;
-mincorr = 0.5;
+mincorr = 0.4;
 linenoisy = 4;
 
-thresh_chan = 0.05;
+thresh_chan = 0.1;
 reject = 1;
-thresh_param.low_thresh = -300;
-thresh_param.up_thresh = 300;
+thresh_param.low_thresh = -500;
+thresh_param.up_thresh = 500;
 trends_param.slope = 200;
 trends_param.r2 = 0.2;
-spectra_param.threshold = [-30, 30];
+spectra_param.threshold = [-35, 35];
 spectra_param.freqlimits = [20 40];
 
 
@@ -41,8 +41,9 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:numel(id)
+for i = 102:numel(id)
     
+    fprintf('dataset %i/%i: %s\n', i, numel(id), id{i});
     outputFilename = sprintf('%s_%s.mat', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     if exist(outputFilenameFull, 'file')
@@ -50,7 +51,11 @@ for i = 1:numel(id)
         continue
     end
     ica = struct();
-    
+    if strcmp(offlineRef, 'average')
+        isavg = 1;
+    else
+        isavg = 0;
+    end
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
     
@@ -69,18 +74,18 @@ for i = 1:numel(id)
     EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
     % remove channels
-    if ~strcmp(offlineRef, 'average')
+    if ~isavg
         rmChansReal = setdiff(rmChans, offlineRef);
     else
         rmChansReal = rmChans;
     end
-        
+    
     EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
     
     labels = {EEG.chanlocs.labels};
     % re-reference if necessary
-    if ~strcmp(offlineRef, 'average')
+    if ~isavg
         offlineRefReal = intersect(labels, offlineRef);
         if strcmpi(char(offlineRefReal), 'm2')
             indexM2 = find(ismember(labels, offlineRefReal));
@@ -88,25 +93,33 @@ for i = 1:numel(id)
         end
         EEG = pop_reref(EEG, find(ismember(labels, offlineRefReal)));
         EEG = eeg_checkset(EEG);
-    elseif strcmp(offlineRef, 'average')
+    else
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
-    elseif isempty(offlineRef)
-        disp('not to be re-referenced')
     end
 
     orig_chanlocs = EEG.chanlocs;
     % reject bad channels
     % badChannels = eeg_detect_bad_channels(EEG);
     EEG = rej_badchan(EEG, flatline, mincorr, linenoisy);
-    badchans = {orig_chanlocs.labels};
-    badchans = badchans(~EEG.etc.clean_channel_mask);
+    if isfield(EEG.etc, 'clean_channel_mask')
+        badchans = {orig_chanlocs.labels};
+        badchans = badchans(~EEG.etc.clean_channel_mask);
+    else
+        badchans = {};
+    end
+    try
+        fprintf('%i number of bad channels are detected\n They are %s\n', ...
+                numel(badchans), cellstrcat(badchans, ' '));
+    catch
+        fprintf('no bad channels detected\n');
+    end
     % labels = {EEG.chanlocs.labels};
     % badchans = labels(badChannels);
     % EEG = pop_select(EEG, 'nochannel', badChannels);
     
     % re-reference if offRef is average
-    if strcmp(offlineRef, 'average')
+    if isavg
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
     end
@@ -127,11 +140,6 @@ for i = 1:numel(id)
                                  thresh_chan, reject);
     
     % run ica
-    if strcmp(offlineRef, 'average')
-        isavg = 1;
-    else
-        isavg = 0;
-    end
     [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, isavg);
     ica.info = info;
     ica.info.badchans = badchans;
