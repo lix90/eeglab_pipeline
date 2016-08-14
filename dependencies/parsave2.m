@@ -1,4 +1,4 @@
-function parsave2(fname, data, datastr,opts)
+function parsave2(fname, data2save, datastr,opts)
 % inputs:
 % fname is the fullpath filename
 % data is the variable to save
@@ -6,5 +6,6 @@ function parsave2(fname, data, datastr,opts)
 % opts are options for saving
 % lix(its.lix@outlook.com) retrieved from amgordon/eegfmri
 
+data = data2save;
 eval([datastr '= data;']);
 save(fname, datastr, opts);

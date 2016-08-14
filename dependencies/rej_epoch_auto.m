@@ -9,12 +9,14 @@ if ~isempty(EEG.reject.rejglobalE) && exist('threshChan', 'var')
     perBadEpochInChannels = sum(EEG.reject.rejglobalE, 2)/EEG.trials;
     rej_ch = find(perBadEpochInChannels > threshChan);
     if ~isempty(rej_ch)
-        fprintf('start: reject channels');
+        fprintf('---start: reject channels---\n');
         EEG = pop_select(EEG, 'nochannel', rej_ch);
         EEG = eeg_checkset(EEG);
         % identify epoch again
-        fprintf('start: the 2nd automatical bad epoch rejecting\n');
-        EEG = rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param);        
+        fprintf('---start: the 2nd automatical bad epoch rejecting---\n');
+        EEG = rej_detect_epoch(EEG, thresh_param, trends_param, ...
+                               spectra_param);
+        EEG = eeg_checkset(EEG);
     end
 end
 
