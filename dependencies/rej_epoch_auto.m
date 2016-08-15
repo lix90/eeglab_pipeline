@@ -25,7 +25,7 @@ if reject
     EEG = pop_rejepoch(EEG, indexRej ,0);
 end
 
-info.rej_epoch_auto = EEG.reject.rejglobal;
+info.rej_epoch_auto = indexRej;
 labels = {info.orig_chanlocs.labels};
 info.rej_chan_by_epoch = labels(rej_ch);
 
