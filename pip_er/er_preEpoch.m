@@ -1,8 +1,8 @@
 clear, clc, close all
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'preEpoch';
-icaTag = 'icaEpoch';
+outputTag = 'preEpoch2';
+icaTag = 'preICA2';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -11,19 +11,21 @@ onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10', 'M2'};
 sampleRate = 250;
-hiPassHzPreICA = [];
-hiPassHz = 1;
+
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-1, 5];
-reallyRejIC = 0;
+hipass = 0.02;
+lowpass = [];
+
+thresh_param.low_thresh = -500;
+thresh_param.up_thresh = 500;
+trends_param.slope = 200;
+trends_param.r2 = 0.2;
+spectra_param.threshold = [-35, 35];
+spectra_param.freqlimits = [20 40];
+
 EOG = [];
-nTrialOrig = 200;
-thresh = [];
-prob = [6, 3];
-kurt = [6, 3];
-threshTrialPerChan = 100;
-threshTrialPerSubj = 100;
-reallyRejEpoch = 0;
+rejIC = 0;
 
 %%--------------
 inputDir = fullfile(baseDir, inputTag);
@@ -31,14 +33,15 @@ outputDir = fullfile(baseDir, outputTag);
 icaDir = fullfile(baseDir, icaTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
-[inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
+[inputFilename, id] = get_fileinfo(inputDir, fileExtension, prefixPosition);
 
 rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = [1:100, 102:numel(id)]
+for i = [1:20, 22:82, 84:100, 102:numel(id)]
     
+    fprintf('subj %i/%i: %s', i, numel(id), id{i});
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
     
@@ -46,16 +49,17 @@ for i = [1:100, 102:numel(id)]
         warning('files alrealy exist!')
         continue
     end
+
+    % load icamat
+    icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
+    load(fullfile(icaDir, icaFile));
+    ica = y;
     
     % import dataset
-    [EEG, ALLEEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
+    [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
     
-    % down-sampling
-    EEG = pop_resample(EEG, sampleRate);
-    EEG = eeg_checkset(EEG);
-        
     % add channel locations
-    EEG = addChanLoc(EEG, brainTemplate, onlineRef, appendOnlineRef);
+    EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
     % remove channels
     if ~strcmp(offlineRef, 'average')
@@ -63,20 +67,15 @@ for i = [1:100, 102:numel(id)]
     else
         rmChansReal = rmChans;
     end
-        
+    
     EEG = pop_select(EEG, 'nochannel', rmChansReal);
     EEG = eeg_checkset(EEG);
-    EEG.etc.origChanlocs = EEG.chanlocs;
     
     labels = {EEG.chanlocs.labels};
 
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         offlineRefReal = intersect(labels, offlineRef);
-        if strcmpi(char(offlineRefReal), 'm2')
-            indexM2 = find(ismember(labels, offlineRefReal));
-            EEG.data(indexM2, :) = EEG.data(indexM2, :)/2;
-        end
         EEG = pop_reref(EEG, find(ismember(labels, offlineRefReal)));
         EEG = eeg_checkset(EEG);
     elseif strcmp(offlineRef, 'average')
@@ -86,19 +85,16 @@ for i = [1:100, 102:numel(id)]
         disp('not to be re-referenced')
     end
     
-    EEG2 = EEG;
     % high pass filtering
-    if exist('hiPassHzPreICA', 'var') && ~isempty(hiPassHzPreICA)
-        EEG = pop_eegfiltnew(EEG, hiPassHzPreICA, 0);
+    if ~isempty(hipass)
+        EEG = pop_eegfiltnew(EEG, hipass, 0);
         EEG = eeg_checkset(EEG);
     end
     
     % reject bad channels
-    EEG2 = pop_eegfiltnew(EEG2, hiPassHz, 0);
-    badChannels = eeg_detect_bad_channels(EEG2);
-    EEG.etc.badChannels = badChannels;
-    EEG = pop_select(EEG, 'nochannel', badChannels);
-    EEG2 = [];
+    labels = {EEG.chanlocs.labels};
+    badchans = union(ica.info.rej_chan_by_epoch, ica.info.badchans);
+    EEG = pop_select(EEG, 'nochannel', find(ismember(labels, badchans)));
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
@@ -109,48 +105,37 @@ for i = [1:100, 102:numel(id)]
     % epoching
     EEG = pop_epoch(EEG, natsort(marks), timeRange, 'epochinfo', 'yes');
     EEG = eeg_checkset(EEG);
+
+    % down-sampling
+    EEG = pop_resample(EEG, sampleRate);
+    EEG = eeg_checkset(EEG);
     
     % baseline-zero
     EEG = pop_rmbase(EEG, []);
     EEG = eeg_checkset(EEG);
-    
-    % load icamat
-    icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
-    load(fullfile(icaDir, icaFile));
-    EEG.icawinv = x.icawinv;
-    EEG.icasphere = x.icasphere;
-    EEG.icaweights = x.icaweights;
+
+    % reject epochs
+    [EEG, EEG.etc.info2] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, 1, 1);
+
+    EEG.etc.info = ica.info;
+    EEG.icawinv = ica.icawinv;
+    EEG.icasphere = ica.icasphere;
+    EEG.icaweights = ica.icaweights;
     EEG = eeg_checkset(EEG, 'ica');
     
     %% reject ICs
     try
-        EEG = rejBySASICA(EEG, EOG, reallyRejIC);
+        EEG = rej_SASICA(EEG, EOG, rejIC);
     catch
         disp('wrong');
     end
 
     % baseline-zero again
-    if reallyRejIC
+    if rejIC
         EEG = pop_rmbase(EEG, []);
     end
     
-    % reject epochs
-    EEG = autoRejTrial(EEG, thresh, prob, kurt, threshTrialPerChan, ...
-                       reallyRejEpoch);
-    
-    % whether or not reject subject by percentage of trials rejected
-    rej_or_not = rejSubj(EEG, threshTrialPerSubj, nTrialOrig);
-    if rej_or_not
-        textFile = fullfile(outputDir, sprintf('%s_subjRejected.txt', id{i}));
-        fid = fopen(textFile, 'w');
-        fprintf(fid, sprintf('subject %s rejected for too many bad epochs\n', ...
-                             id{i}));
-        fclose(fid);
-    else
-    
-        % save dataset
-        EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
-    end
+    EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
