@@ -1,28 +1,23 @@
 clear, clc, close all
 baseDir = '~/Data/lqs_gambling/';
 inputTag = 'merge';
-outputTag = 'preICA';
-fileExtension = {'set'};
+outputTag = 'preEpoch';
+icaTag = 'preICA';
+fileExtension = {'set', 'eeg'};
 prefixPosition = 2;
 
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
 offlineRef = {'TP9', 'TP10'};
-
 sampleRate = 250;
-hipass = 1;
+timeRange = [-1, 2];
+hipass = 0.02;
 lowpass = [];
+
 marks = {'no_neg_big'  'no_neg_small'  'no_pos_big'  'no_pos_small'...
          'yes_neg_big'  'yes_neg_mall'  'yes_pos_big'  'yes_pos_small'  };
-timeRange = [-1, 2];
 
-flatline = 5;
-mincorr = 0.4;
-linenoisy = 4;
-
-thresh_chan = 0.05;
-reject = 1;
 thresh_param.low_thresh = -500;
 thresh_param.up_thresh = 500;
 trends_param.slope = 200;
@@ -30,41 +25,39 @@ trends_param.r2 = 0.2;
 spectra_param.threshold = [-35, 35];
 spectra_param.freqlimits = [20 40];
 
+EOG = [];
+rejIC = 0;
+
 %%--------------
 inputDir = fullfile(baseDir, inputTag);
 outputDir = fullfile(baseDir, outputTag);
+icaDir = fullfile(baseDir, icaTag);
 if ~exist(outputDir, 'dir'); mkdir(outputDir); end
 
 [inputFilename, id] = get_fileinfo(inputDir, fileExtension, prefixPosition);
 
 rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
-           'M1', 'M2', 'TP9', 'TP10', ...
-           'CB1', 'CB2'};
+           'M1', 'M2', 'TP9', 'TP10'};
 
 for i = 1:numel(id)
     
-    fprintf('subject %i/%i: %s\n', i, numel(id), id{i});
-    outputFilename = sprintf('%s_%s.mat', id{i}, outputTag);
+    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
     outputFilenameFull = fullfile(outputDir, outputFilename);
+    
     if exist(outputFilenameFull, 'file')
         warning('files alrealy exist!')
         continue
     end
-    ica = struct();
+
+    % load icamat
+    icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
+    load(fullfile(icaDir, icaFile));
     
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
     
-    % high pass filtering
-    EEG = pop_eegfiltnew(EEG, hipass, 0);
-    EEG = eeg_checkset(EEG);
-    
-    % low pass filtering
-    if ~isempty(lowpass)
-        EEG = pop_eegfiltnew(EEG, 0, lowpass);
-        EEG = eeg_checkset(EEG);
-    end
+
     
     % add channel locations
     EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef);
@@ -80,6 +73,7 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG);
     
     labels = {EEG.chanlocs.labels};
+
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         offlineRefReal = intersect(labels, offlineRef);
@@ -91,19 +85,17 @@ for i = 1:numel(id)
     elseif isempty(offlineRef)
         disp('not to be re-referenced')
     end
-
-    orig_chanlocs = EEG.chanlocs;
-    % reject bad channels
-    % badChannels = eeg_detect_bad_channels(EEG);
-    EEG = rej_badchan(EEG, flatline, mincorr, linenoisy);
-    badchans = {orig_chanlocs.labels};
-    if ~isfield(EEG.etc, 'clean_channel_mask')
-        EEG.etc.clean_channel_mask = ones(1, EEG.nbchan);
+    
+    % high pass filtering
+    if ~isempty(hipass)
+        EEG = pop_eegfiltnew(EEG, hipass, 0);
+        EEG = eeg_checkset(EEG);
     end
-    badchans = badchans(~EEG.etc.clean_channel_mask);
-    % labels = {EEG.chanlocs.labels};
-    % badchans = labels(badChannels);
-    % EEG = pop_select(EEG, 'nochannel', badChannels);
+    
+    % reject bad channels
+    labels = {EEG.chanlocs.labels};
+    badchans = union(ica.info.rej_chan_by_epoch, ica.info.badchans);
+    EEG = pop_select(EEG, 'nochannel', find(ismember(labels, badchans)));
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
@@ -114,29 +106,37 @@ for i = 1:numel(id)
     % epoching
     EEG = pop_epoch(EEG, natsort(marks), timeRange, 'epochinfo', 'yes');
     EEG = eeg_checkset(EEG);
-    
-    % baseline-zero
-    EEG = pop_rmbase(EEG, []);
 
     % down-sampling
     EEG = pop_resample(EEG, sampleRate);
     EEG = eeg_checkset(EEG);
     
+    % baseline-zero
+    EEG = pop_rmbase(EEG, []);
+    EEG = eeg_checkset(EEG);
+
     % reject epochs
-    [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
-                                 thresh_chan, reject);
+    [EEG, EEG.etc.info2] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, 1, 1);
+
+    EEG.etc.info = ica.info;
+    EEG.icawinv = ica.icawinv;
+    EEG.icasphere = ica.icasphere;
+    EEG.icaweights = ica.icaweights;
+    EEG = eeg_checkset(EEG, 'ica');
     
-    % run ica
-    if strcmp(offlineRef, 'average')
-        isavg = 1;
-    else
-        isavg = 0;
+    %% reject ICs
+    try
+        EEG = rej_SASICA(EEG, EOG, rejIC);
+    catch
+        disp('wrong');
     end
-    [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, isavg);
-    ica.info = info;
-    ica.info.badchans = badchans;
-    ica.info.orig_chanlocs = orig_chanlocs;
-    parsave2(outputFilenameFull, ica, 'ica', '-mat');
+
+    % baseline-zero again
+    if rejIC
+        EEG = pop_rmbase(EEG, []);
+    end
+    
+    EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     EEG = []; ALLEEG = []; CURRENTSET = [];
     
 end
