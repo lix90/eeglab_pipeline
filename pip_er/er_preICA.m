@@ -1,7 +1,7 @@
 clear, clc, close all
 base_dir = '~/Data/gender-role-emotion-regulation/';
 input_tag = 'merge';
-output_tag = 'preICA2';
+output_tag = 'preICA3';
 file_ext = {'set', 'eeg'};
 seperator = 1;
 
@@ -38,13 +38,15 @@ input_dir = fullfile(base_dir, input_tag);
 output_dir = fullfile(base_dir, output_tag);
 if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
-[inputFilename, id] = get_fileinfo(input_dir, file_ext, seperator);
+[input_fname, id] = get_fileinfo(input_dir, file_ext, seperator);
 
 rm_chans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
             'VEOD', 'VEO', 'VEOU', 'VEOG', ...
             'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 102:numel(id)
+set_matlabpool(2);
+
+parfor i = 3:4
     
     fprintf('dataset %i/%i: %s\n', i, numel(id), id{i});
     output_fname = sprintf('%s_%s.mat', id{i}, output_tag);

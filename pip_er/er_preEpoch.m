@@ -1,8 +1,8 @@
 clear, clc, close all
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'preEpoch2';
-icaTag = 'preICA2';
+outputTag = 'preEpoch3';
+icaTag = 'preICA3';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -20,9 +20,15 @@ lowpass = [];
 thresh_param.low_thresh = -500;
 thresh_param.up_thresh = 500;
 trends_param.slope = 200;
-trends_param.r2 = 0.2;
+trends_param.r2 = 0.3;
 spectra_param.threshold = [-35, 35];
 spectra_param.freqlimits = [20 40];
+joint_param.single_chan = 8;
+joint_param.all_chan = 4;
+kurt_param.single_chan = 8;
+kurt_param.all_chan = 4;
+thresh_chan = 0.1;
+reject = 1;
 
 EOG = [];
 rejIC = 0;
@@ -39,7 +45,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:numel(id)
+parfor i = 3:4
     
     fprintf('subj %i/%i: %s', i, numel(id), id{i});
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
@@ -52,9 +58,9 @@ for i = 1:numel(id)
 
     % load icamat
     icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
+    ica = struct();
     load(fullfile(icaDir, icaFile));
-    ica = y;
-    
+        
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
     
@@ -76,6 +82,10 @@ for i = 1:numel(id)
     % re-reference if necessary
     if ~strcmp(offlineRef, 'average')
         offlineRefReal = intersect(labels, offlineRef);
+        if strcmpi(char(offlineRefReal), 'm2')
+            indexM2 = find(ismember(labels, offlineRefReal));
+            EEG.data(indexM2, :) = EEG.data(indexM2, :)/2;
+        end
         EEG = pop_reref(EEG, find(ismember(labels, offlineRefReal)));
         EEG = eeg_checkset(EEG);
     elseif strcmp(offlineRef, 'average')
@@ -88,6 +98,11 @@ for i = 1:numel(id)
     % high pass filtering
     if ~isempty(hipass)
         EEG = pop_eegfiltnew(EEG, hipass, 0);
+        EEG = eeg_checkset(EEG);
+    end
+    
+    if ~isempty(lowpass)
+        EEG = pop_eegfiltnew(EEG, 0, lowpass);
         EEG = eeg_checkset(EEG);
     end
     
@@ -115,8 +130,9 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG);
 
     % reject epochs
-    [EEG, EEG.etc.info2] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, 1, 1);
-
+    EEG = pop_rejepoch(EEG, ica.info.rej_epoch_auto, 0);
+    EEG = eeg_checkset(EEG);
+    
     EEG.etc.info = ica.info;
     EEG.icawinv = ica.icawinv;
     EEG.icasphere = ica.icasphere;
