@@ -39,7 +39,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = [1:20, 22:82, 84:100, 102:numel(id)]
+for i = 1:numel(id)
     
     fprintf('subj %i/%i: %s', i, numel(id), id{i});
     outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
