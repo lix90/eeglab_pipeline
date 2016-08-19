@@ -42,7 +42,8 @@ if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
 rm_chans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
             'VEOD', 'VEO', 'VEOU', 'VEOG', ...
-            'M1', 'M2', 'TP9', 'TP10'};
+            'M1', 'M2', 'TP9', 'TP10', ...
+            'CB1', 'CB2'};
 
 for i = 102:numel(id)
     
