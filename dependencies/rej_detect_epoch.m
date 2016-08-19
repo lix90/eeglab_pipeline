@@ -1,5 +1,7 @@
-function EEG = rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param)
+function EEG = rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param, ...
+                                joint_param, kurt_param, thresh_chan)
 
+%% code
 if ~isempty(thresh_param) && all(isfield(thresh_param, {'low_thresh', 'up_thresh'}))
     % find abnormal values
     fprintf('start: detect bad epochs by abnormal values\n');
@@ -20,6 +22,7 @@ if ~isempty(thresh_param) && all(isfield(thresh_param, {'low_thresh', 'up_thresh
     fprintf('%d/%d trial(s) marked for rejection\n', length(rej_thresh), ...
             EEG.trials);
 end
+
 if ~isempty(trends_param) && all(isfield(trends_param, {'slope', 'r2'}))
     % find abnormal trends
     fprintf('start: detect bad epochs by abnormal trends\n');
@@ -35,6 +38,7 @@ if ~isempty(trends_param) && all(isfield(trends_param, {'slope', 'r2'}))
             length(find(EEG.reject.rejconst>0)), EEG.trials);
     EEG = eeg_checkset(EEG);
 end
+
 if ~isempty(spectra_param) && all(isfield(spectra_param, {'threshold', 'freqlimits'}))
     % find abnormal spectra
     fprintf('start: detect bad epochs by abnormal spectra\n');
@@ -61,6 +65,33 @@ if ~isempty(spectra_param) && all(isfield(spectra_param, {'threshold', 'freqlimi
     fprintf('%d/%d trial(s) marked for rejection\n', length(rej_spec), ...
             EEG.trials);
 end
+
+if ~isempty(joint_param) && all(isfield(joint_param, {'single_chan', ...
+                        'all_chan'}))
+    EEG = pop_jointprob(EEG, 1, 1:EEG.nbchan, joint_param.single_chan, ...
+                        joint_param.all_chan, 0, 0);
+end
+
+if ~isempty(kurt_param) && all(isfield(kurt_param, {'single_chan', 'all_chan'}))
+    EEG = pop_rejkurt(EEG, 1, 1:EEG.nbchan, kurt_param.single_chan, ...
+                      kurt_param.all_chan, 0, 0);
+end
+
 fprintf('start superpose marked epochs\n');
 EEG = eeg_rejsuperpose(EEG, 0, 1, 1, 1, 1, 1, 1, 1);
 EEG = eeg_checkset(EEG);
+
+% identify epoch
+if ~isempty(EEG.reject.rejglobalE) && exist('thresh_chan', 'var')
+    perBadEpochInChannels = sum(EEG.reject.rejglobalE, 2)/EEG.trials;
+    rej_ch = find(perBadEpochInChannels > thresh_chan);
+    if ~isempty(rej_ch)
+        fprintf('---start: reject channels---\n');
+        EEG = pop_select(EEG, 'nochannel', rej_ch);
+        EEG = eeg_checkset(EEG);
+        % identify epoch again
+        EEG = rej_detect_epoch(EEG, thresh_param, trends_param, ...
+                               spectra_param, joint_param, kurt_param, thresh_chan);
+        EEG = eeg_checkset(EEG);
+    end
+end
