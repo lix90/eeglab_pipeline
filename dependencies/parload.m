@@ -1,4 +1,4 @@
 function data = parload(fname)
 
 data = [];
-eval(['data =', 'load(', fname, ');']);
+eval(['data =', 'load(fname);']);

@@ -45,9 +45,9 @@ rm_chans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
             'M1', 'M2', 'TP9', 'TP10', ...
             'CB1', 'CB2'};
 
-set_matlabpool(2);
+set_matlabpool(4);
 
-parfor i = 3:4
+parfor i = 1:numel(id)
     
     fprintf('dataset %i/%i: %s\n', i, numel(id), id{i});
     output_fname = sprintf('%s_%s.mat', id{i}, output_tag);
@@ -135,17 +135,21 @@ parfor i = 3:4
     EEG = pop_resample(EEG, srate);
     EEG = eeg_checkset(EEG);
     
-    % reject epochs
-    [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
-                                 joint_param, kurt_param, thresh_chan, reject);
-    
-    % run ica
-    [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, isavg);
-    ica.info = info;
-    ica.info.badchans = badchans;
-    ica.info.orig_chanlocs = orig_chanlocs;
-    parsave2(output_fname_full, ica, 'ica', '-mat');
+    try
+        % reject epochs
+        [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
+                                     joint_param, kurt_param, thresh_chan, reject);
+        
+        % run ica
+        [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, ...
+                                                          isavg);
+        ica.info = info;
+        ica.info.badchans = badchans;
+        ica.info.orig_chanlocs = orig_chanlocs;
+        parsave2(output_fname_full, ica, 'ica', '-mat');
+    catch
+        disp('wrong');
+    end
     EEG = []; ALLEEG = []; CURRENTSET = [];
-    
 end
 % eeglab redraw;
