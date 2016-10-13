@@ -8,7 +8,7 @@ function [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, filename)
 
 % [ALLEEG EEG CURRENTSET ALLCOM] = eeglab;
 ALLEEG = []; EEG = []; CURRENTSET = [];
-fileExtension = filename(end-2:end);
+fileExtension = lower(filename(end-2:end));
 % load dataset
 switch fileExtension
   case 'set'
