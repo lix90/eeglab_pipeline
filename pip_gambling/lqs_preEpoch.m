@@ -1,27 +1,31 @@
 clear, clc, close all
 baseDir = '~/Data/lqs_gambling/';
-inputTag = 'merge';
-outputTag = 'preEpoch';
-icaTag = 'preICA';
-fileExtension = {'set', 'eeg'};
+inputTag = 'rest_merge';
+outputTag = 'rest_preEpoch';
+icaTag = 'rest_preICA';
+fileExtension = {'set'};
 prefixPosition = 2;
 
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
-appendOnlineRef = true;
-offlineRef = {'TP9', 'TP10'};
+appendOnlineRef = 0;
+offlineRef = 'rest';
 sampleRate = 250;
 timeRange = [-1, 2];
 hipass = 0.02;
 lowpass = [];
 
 marks = {'no_neg_big'  'no_neg_small'  'no_pos_big'  'no_pos_small'...
-         'yes_neg_big'  'yes_neg_mall'  'yes_pos_big'  'yes_pos_small'  };
+         'yes_neg_big'  'yes_neg_mall'  'yes_pos_big'  'yes_pos_small'};
 
-thresh_param.low_thresh = -500;
-thresh_param.up_thresh = 500;
+thresh_param.low_thresh = -300;
+thresh_param.up_thresh = 300;
 trends_param.slope = 200;
 trends_param.r2 = 0.2;
+joint_param.single_chan = 8;
+joint_param.all_chan = 4;
+kurt_param.single_chan = 8;
+kurt_param.all_chan = 4;
 spectra_param.threshold = [-35, 35];
 spectra_param.freqlimits = [20 40];
 
@@ -56,9 +60,7 @@ for i = 1:numel(id)
     
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
-    
-
-    
+        
     % add channel locations
     EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef);
     
@@ -75,16 +77,16 @@ for i = 1:numel(id)
     labels = {EEG.chanlocs.labels};
 
     % re-reference if necessary
-    if ~strcmp(offlineRef, 'average')
-        offlineRefReal = intersect(labels, offlineRef);
-        EEG = pop_reref(EEG, find(ismember(labels, offlineRefReal)));
-        EEG = eeg_checkset(EEG);
-    elseif strcmp(offlineRef, 'average')
-        EEG = pop_reref(EEG, []);
-        EEG = eeg_checkset(EEG);
-    elseif isempty(offlineRef)
-        disp('not to be re-referenced')
-    end
+    % if ~strcmp(offlineRef, 'average')
+    %     offlineRefReal = intersect(labels, offlineRef);
+    %     EEG = pop_reref(EEG, find(ismember(labels, offlineRefReal)));
+    %     EEG = eeg_checkset(EEG);
+    % elseif strcmp(offlineRef, 'average')
+    %     EEG = pop_reref(EEG, []);
+    %     EEG = eeg_checkset(EEG);
+    % elseif isempty(offlineRef)
+    %     disp('not to be re-referenced')
+    % end
     
     % high pass filtering
     if ~isempty(hipass)
@@ -116,7 +118,8 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG);
 
     % reject epochs
-    [EEG, EEG.etc.info2] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, 1, 1);
+    [EEG, EEG.etc.info2] = rej_epoch_auto(EEG, thresh_param, trends_param,...
+                                          joint_param, kurt_param, spectra_param, 1, 1);
 
     EEG.etc.info = ica.info;
     EEG.icawinv = ica.icawinv;

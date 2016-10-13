@@ -1,7 +1,7 @@
 % set parameters
 clear, clc
 baseDir = '~/Data/lqs_gambling/';
-inputDir = fullfile(baseDir, 'preEpoch');
+inputDir = fullfile(baseDir, 'rest_preEpoch');
 outputDir = inputDir;
 fileExtension = 'set';
 prefixPosition = 2;
@@ -9,7 +9,7 @@ nameTask = 'emotion regulation & gambling';
 noteStudy = '';
 dipselect = [];
 inbrain = [];
-group_tag = 'uc';
+group_tag = 'cn';
 nameStudy = ['lqs_gambling_', group_tag, '.study'];
 [inputFilename, id] = get_fileinfo(inputDir, fileExtension, prefixPosition);
 
