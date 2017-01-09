@@ -1,42 +1,52 @@
 clear, clc, close all
-baseDir = '~/Data/gender-role-emotion-regulation/';
-inputTag = 'merge';
-outputTag = 'epoch-40hz';
-icaTag = 'ica-40hz';
-fileExtension = {'set', 'eeg'};
-prefixPosition = 1;
+base_dir = '';
+input_folder = 'raw';
+output_folder = 'epoch';
+ica_folder = 'ica';
+output_prefix = 'subj';
+output_sufix = 'epoch';
+file_ext = {'eeg'};
+sep_position = 1;
 
 brainTemplate = 'Spherical';
 onlineRef = 'FCz';
 appendOnlineRef = true;
-offlineRef = {'TP9', 'TP10', 'M2'};
+offlineRef = {'TP9', 'TP10'};
 sampleRate = 250;
 
-marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
-timeRange = [-1, 5];
-hipass = 0.1;
+marks = {'S 55'};
+wrong_resp = {''}; % if not, make it []
+timeRange = [-5, 5];
+hipass = 0.1; % if ERP, it must be less 0.1Hz; otherwise, it can be 1Hz or above.
 lowpass = 40;
-rej_ica_auto = 0;
+
+use_auto_identify_ic = 0;
 EOG = [];
 rejIC = 0;
 
 %%--------------
-inputDir = fullfile(baseDir, inputTag);
-outputDir = fullfile(baseDir, outputTag);
-icaDir = fullfile(baseDir, icaTag);
-if ~exist(outputDir, 'dir'); mkdir(outputDir); end
+input_dir = fullfile(base_dir, input_folder);
+output_dir = fullfile(base_dir, output_folder);
+ica_dir = fullfile(base_dir, ica_folder);
+if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
-[inputFilename, id] = get_fileinfo(inputDir, fileExtension, prefixPosition);
+[inputFilename, id] = get_fileinfo(input_dir, file_ext, sep_position);
 
 rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
-for i = 1:numel(id)
+set_matlabpool(4);
+parfor i = 1:numel(id)
 
     fprintf('subj %i/%i: %s', i, numel(id), id{i});
-    outputFilename = sprintf('%s_%s.set', id{i}, outputTag);
-    outputFilenameFull = fullfile(outputDir, outputFilename);
+    if ~exist(output_prefix, 'var') || isempty(output_prefix)
+        outputFilename = sprintf('%s_%s.set', id{i}, output_sufix);
+    else
+        outputFilename = sprintf('%s%s_%s.set', output_prefix, id{i}, ...
+                                 output_sufix);
+    end
+    outputFilenameFull = fullfile(output_dir, outputFilename);
     
     if exist(outputFilenameFull, 'file')
         warning('files alrealy exist!')
@@ -44,11 +54,15 @@ for i = 1:numel(id)
     end
 
     % load icamat
-    icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
-    data = parload(fullfile(icaDir, icaFile));
+    if ~exist(output_prefix, 'var') || isempty(output_prefix)
+        ica_file = sprintf('%s_%s.mat', id{i}, ica_folder);
+    else
+        ica_file = sprintf('%s%s_%s.mat', output_prefix, id{i}, ica_folder);
+    end
+    data = parload(fullfile(ica_dir, ica_file));
         
     % import dataset
-    [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
+    [EEG, ALLEEG, CURRENTSET] = import_data(input_dir, inputFilename{i});
     
     % add channel locations
     EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef);
@@ -96,7 +110,10 @@ for i = 1:numel(id)
     labels = {EEG.chanlocs.labels};
     ica = data.ica;
     badchans = union(ica.info.rej_chan_by_epoch, ica.info.badchans);
-    EEG = pop_select(EEG, 'nochannel', find(ismember(labels, badchans)));
+    if ~empty(badchans)
+        EEG = pop_select(EEG, 'nochannel', find(ismember(labels, ...
+                                                         badchans)));
+    end
     
     % re-reference if offRef is average
     if strcmp(offlineRef, 'average')
@@ -119,7 +136,14 @@ for i = 1:numel(id)
     % reject epochs
     EEG = pop_rejepoch(EEG, ica.info.rej_epoch_auto, 0);
     EEG = eeg_checkset(EEG);
-    
+        
+    % reject wrong response
+    if ~isempty(wrong_resp)
+        rej_wrong_resp = rej_wrong(EEG, wrong_resp); 
+        EEG = pop_rejepoch(EEG, rej_wrong_resp, 0);
+        EEG = eeg_checkset(EEG);
+    end
+        
     EEG.etc.info = ica.info;
     EEG.icawinv = ica.icawinv;
     EEG.icasphere = ica.icasphere;
@@ -127,10 +151,11 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG, 'ica');
     
     %% reject ICs
-    if rej_ica_auto
+    if use_auto_identify_ic
         EEG = rej_SASICA(EEG, EOG, rejIC);
     end
     
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
     EEG = []; ALLEEG = []; CURRENTSET = [];
+
 end
