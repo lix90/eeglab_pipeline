@@ -151,7 +151,7 @@ parfor i = 1:numel(id)
         parsave2(output_fname_full, ica, 'ica', '-mat');
         
     catch
-        disp('wrong');
+        fprintf('subj %i %s error!', i, id{i});
     end
     
     EEG = []; ALLEEG = []; CURRENTSET = [];
