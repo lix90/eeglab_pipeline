@@ -1,4 +1,4 @@
-function parsave2(fname, data2save, datastr,opts)
+function parsave(fname, data2save, datastr,opts)
 % inputs:
 % fname is the fullpath filename
 % data is the variable to save

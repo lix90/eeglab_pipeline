@@ -1,20 +1,22 @@
 clear, clc, close all
-base_dir = '~/Data/gender-role-emotion-regulation/';
-input_tag = 'merge';
-output_tag = 'preICA3';
-file_ext = {'set', 'eeg'};
+base_dir = '';
+input_folder = 'raw';
+output_prefix = 'subj';
+output_sufix = 'ica';
+file_ext = {'eeg'};
 seperator = 1;
 
 brain_template = 'Spherical';
 on_ref = 'FCz';
 append_on_ref = true;
-off_ref = {'TP9', 'TP10', 'M2'};
+off_ref = {'TP9', 'TP10'};
 
 srate = 250;
 hipass = 1;
-lowpass = [];
-marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
-epoch_time = [-0.5, 4];
+lowpass = 40;
+marks = {'S 55'};
+wrong_resp = {''}; % if no wrong response, make it []
+epoch_time = [-5, 5];
 
 flatline = 5;
 mincorr = 0.4;
@@ -30,12 +32,12 @@ joint_param.single_chan = 8;
 joint_param.all_chan = 4;
 kurt_param.single_chan = 8;
 kurt_param.all_chan = 4;
-thresh_chan = 0.1;
+thresh_chan = 1;
 reject = 1;
 
 %%------------------------
-input_dir = fullfile(base_dir, input_tag);
-output_dir = fullfile(base_dir, output_tag);
+input_dir = fullfile(base_dir, input_folder);
+output_dir = fullfile(base_dir, output_sufix);
 if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
 [input_fname, id] = get_fileinfo(input_dir, file_ext, seperator);
@@ -50,7 +52,12 @@ set_matlabpool(4);
 parfor i = 1:numel(id)
     
     fprintf('dataset %i/%i: %s\n', i, numel(id), id{i});
-    output_fname = sprintf('%s_%s.mat', id{i}, output_tag);
+    if ~exist(output_prefix, 'var') || isempty(output_prefix)
+        output_fname = sprintf('%s_%s.mat', id{i}, output_sufix);
+    else
+        output_fname = sprintf('%s%s_%s.mat', output_prefix, id{i}, ...
+                               output_sufix);
+    end
     output_fname_full = fullfile(output_dir, output_fname);
     if exist(output_fname_full, 'file')
         warning('files alrealy exist!')
@@ -137,23 +144,28 @@ parfor i = 1:numel(id)
     EEG = pop_resample(EEG, srate);
     EEG = eeg_checkset(EEG);
     
-    try
-        % reject epochs
-        [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
-                                     joint_param, kurt_param, thresh_chan, reject);
-        
-        % run ica
-        [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, ...
-                                                          isavg);
-        ica.info = info;
-        ica.info.badchans = badchans;
-        ica.info.orig_chanlocs = orig_chanlocs;
-        parsave2(output_fname_full, ica, 'ica', '-mat');
-        
-    catch
-        disp('wrong');
-    end
+    % reject epochs
+    [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
+                                 joint_param, kurt_param, thresh_chan, ...
+                                 reject);
     
+    % reject wrong response
+    if ~isempty(wrong_resp)
+        rej_wrong_resp = rej_wrong(EEG, wrong_resp); 
+        EEG = pop_rejepoch(EEG, rej_wrong_resp, 0);
+        EEG = eeg_checkset(EEG);
+    end
+        
+    % run ica 
+    EEG = pop_runica(EEG, 'runica', 'extended', 1);
+    ica.icawinv = EEG.icawinv;
+    ica.icasphere = EEG.icasphere;
+    ica.icaweights = EEG.icaweights;
+    ica.info = info;
+    ica.info.badchans = badchans;
+    ica.info.orig_chanlocs = orig_chanlocs;
+    parsave(output_fname_full, ica, 'ica', '-mat');
+        
     EEG = []; ALLEEG = []; CURRENTSET = [];
 end
 % eeglab redraw;

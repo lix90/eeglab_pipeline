@@ -1,7 +1,7 @@
 clear, clc, close all
 base_dir = '~/Data/gender-role-emotion-regulation/';
 input_tag = 'merge';
-output_tag = 'preICA3';
+output_tag = 'ica-40hz';
 file_ext = {'set', 'eeg'};
 seperator = 1;
 
@@ -12,7 +12,7 @@ off_ref = {'TP9', 'TP10', 'M2'};
 
 srate = 250;
 hipass = 1;
-lowpass = [];
+lowpass = 40;
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 epoch_time = [-0.5, 4];
 
@@ -136,7 +136,7 @@ parfor i = 1:numel(id)
     % down-sampling
     EEG = pop_resample(EEG, srate);
     EEG = eeg_checkset(EEG);
-    
+
     try
         % reject epochs
         [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
@@ -148,7 +148,7 @@ parfor i = 1:numel(id)
         ica.info = info;
         ica.info.badchans = badchans;
         ica.info.orig_chanlocs = orig_chanlocs;
-        parsave2(output_fname_full, ica, 'ica', '-mat');
+        parsave(output_fname_full, ica, 'ica', '-mat');
         
     catch
         disp('wrong');

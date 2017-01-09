@@ -1,8 +1,8 @@
 clear, clc, close all
 baseDir = '~/Data/gender-role-emotion-regulation/';
 inputTag = 'merge';
-outputTag = 'preEpoch3';
-icaTag = 'preICA3';
+outputTag = 'epoch-40hz';
+icaTag = 'ica-40hz';
 fileExtension = {'set', 'eeg'};
 prefixPosition = 1;
 
@@ -14,22 +14,9 @@ sampleRate = 250;
 
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
 timeRange = [-1, 5];
-hipass = 0.02;
-lowpass = [];
-
-thresh_param.low_thresh = -500;
-thresh_param.up_thresh = 500;
-trends_param.slope = 200;
-trends_param.r2 = 0.3;
-spectra_param.threshold = [-35, 35];
-spectra_param.freqlimits = [20 40];
-joint_param.single_chan = 8;
-joint_param.all_chan = 4;
-kurt_param.single_chan = 8;
-kurt_param.all_chan = 4;
-thresh_chan = 0.1;
-reject = 1;
-
+hipass = 0.1;
+lowpass = 40;
+rej_ica_auto = 0;
 EOG = [];
 rejIC = 0;
 
@@ -45,6 +32,7 @@ rmChans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
            'VEOD', 'VEO', 'VEOU', 'VEOG', ...
            'M1', 'M2', 'TP9', 'TP10'};
 
+set_matlabpool(4);
 parfor i = 1:numel(id)
 
     try
@@ -141,11 +129,8 @@ parfor i = 1:numel(id)
         EEG = eeg_checkset(EEG, 'ica');
     
         %% reject ICs
-        EEG = rej_SASICA(EEG, EOG, rejIC);
-
-        % baseline-zero again
-        if rejIC
-            EEG = pop_rmbase(EEG, []);
+        if rej_ica_auto
+            EEG = rej_SASICA(EEG, EOG, rejIC);
         end
     
         EEG = pop_saveset(EEG, 'filename', outputFilenameFull);

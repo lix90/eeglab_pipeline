@@ -71,15 +71,15 @@ for i = 1:numel(id)
         [wts, sph] = binica(cleanData, 'extended', 1);
     end
     
-		iWts = pinv(wts*sph);
-		scaling = repmat(sqrt(mean(iWts.^2))', [1 size(wts,2)]);
-		wts = wts.*scaling;
+    iWts = pinv(wts*sph);
+    scaling = repmat(sqrt(mean(iWts.^2))', [1 size(wts,2)]);
+    wts = wts.*scaling;
 
-		EEG.icawinv = pinv(wts*sph);
-		EEG.icasphere = sph;
-		EEG.icaweights = wts;
-		EEG.icaact = [];
-		EEG = eeg_checkset(EEG);
+    EEG.icawinv = pinv(wts*sph);
+    EEG.icasphere = sph;
+    EEG.icaweights = wts;
+    EEG.icaact = [];
+    EEG = eeg_checkset(EEG);
     
     % save dataset
     % parsave(outputFilenameFull, ica);

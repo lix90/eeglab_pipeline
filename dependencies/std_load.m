@@ -29,30 +29,29 @@ stdTask = cfg.stdTask;
 stdNote = cfg.stdNote;
 
 % load sets
-ALLEEG = []; EEG = []; STUDY = [];
-EEG = pop_loadset('filename', inputFilename, 'filepath', inputDir);
+[STUDY, ALLEEG] = pop_loadset('filename', inputFilename, 'filepath', inputDir);
 [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'study',0);
 
 % create studycommands cell arrays
 studycommands = cell(size(inputFilename));
 switch nVar
   case 0
-    for i = 1:numel(setname)
+    for i = 1:numel(inputFilename)
         studycommands{i} = {'index', i, ...
                             'subject', subjID{i}};
     end
   case 1
-    for i = 1:numel(setname)
+    for i = 1:numel(inputFilename)
         studycommands{i} = {'index', i, ...
                             'subject', subjID{i}, ...
                             varType{1}, varID{i}};
     end
   case 2
-    for i = 1:numel(setname)
+    for i = 1:numel(inputFilename)
         studycommands{i} = {'index', i, ...
                             'subject', subjID{i}, ...
-                            varType{1}, var1ID{i,1}, ...
-                            varType{2}, var2ID{i,2}};
+                            varType{1}, varID{i,1}, ...
+                            varType{2}, varID{i,2}};
     end
 end
 
