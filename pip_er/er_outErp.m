@@ -13,7 +13,6 @@ erp_average = 1;
 
 thresh_param.low_thresh = -80;
 thresh_param.up_thresh = 80;
-kjjss
 load(chanlocDir);
 
 %%--------------
