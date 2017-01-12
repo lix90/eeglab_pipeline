@@ -13,10 +13,10 @@ offlineRef = {'TP9', 'TP10', 'M2'};
 sampleRate = 250;
 
 marks = {'S 11', 'S 22', 'S 33', 'S 44', 'S 55'};
-timeRange = [-1, 5];
+timeRange = [-0.2, 4];
 hipass = 0.1;
 lowpass = 40;
-rej_ica_auto = 0;
+rej_ica_auto = 1;
 EOG = [];
 rejIC = 0;
 
@@ -45,7 +45,12 @@ for i = 1:numel(id)
 
     % load icamat
     icaFile = sprintf('%s_%s.mat', id{i}, icaTag);
-    data = parload(fullfile(icaDir, icaFile));
+    
+    if ~exist(fullfile(icaDir, icaFile), 'file')
+        continue
+    else
+        data = parload(fullfile(icaDir, icaFile));
+    end
         
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(inputDir, inputFilename{i});
@@ -99,6 +104,7 @@ for i = 1:numel(id)
     EEG = pop_select(EEG, 'nochannel', find(ismember(labels, badchans)));
     
     % re-reference if offRef is average
+    
     if strcmp(offlineRef, 'average')
         EEG = pop_reref(EEG, []);
         EEG = eeg_checkset(EEG);
@@ -127,8 +133,13 @@ for i = 1:numel(id)
     EEG = eeg_checkset(EEG, 'ica');
     
     %% reject ICs
-    if rej_ica_auto
-        EEG = rej_SASICA(EEG, EOG, rejIC);
+    try
+        if rej_ica_auto
+            EEG = rej_SASICA(EEG, EOG, rejIC);
+            EEG.reject.gcompreject(16:end)=0;
+        end
+    catch
+        disp('wrong')
     end
     
     EEG = pop_saveset(EEG, 'filename', outputFilenameFull);
