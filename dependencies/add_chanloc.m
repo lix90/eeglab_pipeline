@@ -13,6 +13,9 @@ function EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef)
         locFile = 'standard-10-5-cap385.elp';
         chanLocDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BESA', ...
                               locFile);
+      case 'EGI65'  % EGI 64 electrodes cap
+        locFile = 'EGI65.elp'; 
+        chanLocDir = which(locFile);
     end
 
     % add channel locations

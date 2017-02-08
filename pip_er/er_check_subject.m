@@ -1,5 +1,5 @@
 clear, clc, close all
-base_dir = '~/Data/gender-role-emotion-regulation/';
+base_dir = '/Volumes/play/sex-role/';
 input_tag ='epoch-40hz';
 output_tag = 'output-40hz';
 file_ext = 'set';
@@ -31,20 +31,24 @@ mkdir_p(fig_dir);
 % if exist(output_fname_full, 'file')
 %     warning('files alrealy exist!');
 % else
-fid = fopen(output_fname_full, 'w');
-fprintf(fid, ['subject,good_or_bad,how_good\n']);
+% fid = fopen(output_fname_full, 'w');
+% fprintf(fid, ['subject,good_or_bad,how_good\n']);
 
 for i = 1:nf
 
     fig_fname = sprintf('fig_%s.pdf', id{i});
     fig_fullpath = fullfile(fig_dir, fig_fname);
 
+    fprintf('\n\n');
     disp('========================================');
     fprintf('dataset %i/%i: %s\n', i, numel(id), id{i});
     disp('========================================');
     fprintf('\n\n');
 
-    fprintf(fid, [id{i},',']);
+    if exist(fig_fullpath)
+        continue;
+    end
+    % fprintf(fid, [id{i},',']);
 
     EEG = import_data(input_dir, input_fname{i});
     EEG = pop_subcomp(EEG, []);
@@ -58,9 +62,12 @@ for i = 1:nf
 
     % for neutral condition
     epoch_time = [-0.2, 4];
-    EEG_neu = pop_epoch(EEG, NEU, epoch_time);
-    EEG_neg = pop_epoch(EEG, NEG, epoch_time);
-
+    try
+        EEG_neu = pop_epoch(EEG, NEU, epoch_time);
+        EEG_neg = pop_epoch(EEG, NEG, epoch_time);
+    catch
+        continue;
+    end
     times = EEG_neu.times;
 
     if numel(chan_index)>1
@@ -172,39 +179,36 @@ for i = 1:nf
     set(hlen, 'Box', 'off');
     print(ploterp, fig_fullpath, '-dpdf', '-r300');
 
-    good_or_bad_v = [];
-    while isempty(good_or_bad_v)
-        good_or_bad_v = input('Good or Bad? 1/0:');
-        if isempty(good_or_bad_v)
-            disp('Please input 1 or 0');
-            good_or_bad_v = [];
-        end
-    end
+    % good_or_bad_v = [];
+    % while isempty(good_or_bad_v)
+    %     good_or_bad_v = input('Good or Bad? 1/0:');
+    %     if isempty(good_or_bad_v)
+    %         disp('Please input 1 or 0');
+    %         good_or_bad_v = [];
+    %     end
+    % end
 
-    how_good_v = [];
-    while isempty(how_good_v)
-        how_good_v = input('How Good Is It? 1-5:');
-        if ~isnumeric(how_good_v)
-            disp('The value must be a number');
-            how_good_v = [];
-        elseif how_good_v < 0 || how_good_v > 5
-            disp('The value must be a number between 0 ~ 5');
-            how_good_v = [];
-        end
-    end
+    % how_good_v = [];
+    % while isempty(how_good_v)
+    %     how_good_v = input('How Good Is It? 1-5:');
+    %     if ~isnumeric(how_good_v)
+    %         disp('The value must be a number');
+    %         how_good_v = [];
+    %     elseif how_good_v < 0 || how_good_v > 5
+    %         disp('The value must be a number between 0 ~ 5');
+    %         how_good_v = [];
+    %     end
+    % end
 
-    fprintf(fid, sprintf('%i,', good_or_bad_v));
-    if i==nf
-        fprintf(fid, sprintf('%i', how_good_v));
-    else
-        fprintf(fid, sprintf('%i\n', how_good_v));
-    end
-
+    % fprintf(fid, sprintf('%i,', good_or_bad_v));
+    % if i==nf
+    %     fprintf(fid, sprintf('%i', how_good_v));
+    % else
+    %     fprintf(fid, sprintf('%i\n', how_good_v));
+    % end
     if ishandle(ploterp)
-        disp('Please close the figure');
-        pause
+        close(ploterp);
     end
 end
 % end
-
 fclose('all');
