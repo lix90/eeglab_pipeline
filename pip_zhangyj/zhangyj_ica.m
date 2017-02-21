@@ -1,3 +1,7 @@
+%% Script for running ICA
+
+
+%% Initialize Variables
 clear, clc, close all
 base_dir = '';
 input_folder = 'raw';
@@ -7,11 +11,11 @@ output_sufix = 'ica';
 file_ext = {'raw'};
 seperator = 1;
 
+% Parameters for preprocessing
 brain_template = 'EGI65';  % Spherical
 on_ref = 'Cz';
 append_on_ref = true;
 off_ref = {'TP9', 'TP10'};
-
 srate = 250;
 hipass = 1;
 lowpass = 40;
@@ -20,10 +24,12 @@ stims = {'zheng', 'fu', 'zhong'};
 format_spec = '%s %s %s';
 epoch_time = [-0.2, 1];
 
+% Thresholds for detecting bad channels
 flatline = 5;
 mincorr = 0.4;
 linenoisy = 4;
 
+% Thresholds for detecting bad epochs
 thresh_param.low_thresh = -300;
 thresh_param.up_thresh = 300;
 trends_param.slope = 200;
@@ -37,7 +43,9 @@ kurt_param.all_chan = 4;
 thresh_chan = 1;
 reject = 1;
 
-%%------------------------
+
+%% Code begins
+
 input_dir = fullfile(base_dir, input_folder);
 txt_dir = fullfile(base_dir, txt_folder);
 output_dir = fullfile(base_dir, output_sufix);

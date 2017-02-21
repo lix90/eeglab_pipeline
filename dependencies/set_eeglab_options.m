@@ -1,7 +1,4 @@
-function set_eeglab(eeglabPath)
-
-% add eeglab path
-addpath(genpath(eeglabPath));
+function set_eeglab_options
 
 pop_editoptions( 'option_storedisk', 0, ...
                  'option_savetwofiles', 1, ...

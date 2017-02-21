@@ -9,11 +9,10 @@ base_dir = '';
 input_folder = '';
 output_folder = '';
 file_ext = 'cnt';
-fname_sep_pos = 2;  % filename seperator position, used to generate ids
+fname_sep_pos = 3;  % filename seperator position, used to generate ids
 recr = 1;  % interval of the dummy events, such as 1 second
 lmts = [0 1];  % latencies relative to the events to use as epoch boundaries
 rmbs = NaN;  % do not remove baseline
-evnt = 'ce';  % dummy events, such as CE (close eye) or OE (open eye)
 extr = 'off';  % do not extract epochs
 
 % ------------------------------------------------------------------------------
@@ -41,7 +40,13 @@ for i = 1:numel(input_fname)
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(input_dir, input_fname{i});
 
-    % insert dummy events
+    % conditionally insert events
+    if any(strfind(input_fname{i}, 'open'))
+        evnt = 'open';
+    elseif
+        evnt = 'close';
+    end
+    % insert dum my events
     EEG = eeg_regepochs(EEG, 'recurrence', recr, ...
                         'limits', lmts, ...
                         'rmbase', rmbs, ...

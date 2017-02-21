@@ -9,7 +9,7 @@ base_dir = '';
 input_folder = '';
 output_folder = '';
 file_ext = 'set';
-fname_sep_pos = 1;
+fname_sep_pos = 2;
 exp_type = 'ce';  % experiment type, close eye or open eye
 
 % ------------------------------------------------------------------------------
@@ -29,14 +29,21 @@ for i = 1:length(id)
     ALLEEG = []; EEG = []; CURRENTSET = 0;
     output_fname = sprintf('%s_%s_merge.set', exp_type, id{i}); 
     output_fname_full = fullfile(output_dir, output_fname);
-    if exist(outName, 'file'); warning('files already exist'); continue; end
-    tmp = dir(fullfile(inputDir, strcat(id{i}, '*.', ext)));
+    if exist(output_fname_full, 'file'); warning('files already exist'); continue; end
+    
+    if strcmpi(exp_type, 'oe')
+        tmp = dir(fullfile(input_dir, strcat(id{i}, '*open*.', file_ext)));
+    elseif strcmpi(exp_type, 'ce')
+        tmp = dir(fullfile(input_dir, strcat(id{i}, '*close*.', file_ext)));
+    end
     fname_this_subject = natsort({tmp.name});
-
+    
     % loading set
     for j = 1:length(fname_this_subject)
         
-        [EEG, ALLEEG, CURRENTSET] = import_data(input_dir, fname_this_subject{j});
+        % [EEG, ALLEEG, CURRENTSET] = import_data(input_dir,
+        % fname_this_subject{j});
+        EEG = pop_fileio(fullfile(input_dir, fname_this_subject{j}));
         [ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, j);
         EEG = eeg_checkset(EEG);
     

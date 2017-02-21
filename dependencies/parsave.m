@@ -6,6 +6,11 @@ function parsave(fname, data2save, datastr,opts)
 % opts are options for saving
 % lix(its.lix@outlook.com) retrieved from amgordon/eegfmri
 
+if ~exist('opts', 'var')
+    opts = '-mat';
+end
+
+
 data = data2save;
 eval([datastr '= data;']);
 save(fname, datastr, opts);
