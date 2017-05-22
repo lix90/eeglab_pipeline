@@ -29,8 +29,7 @@ function EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef)
         doNotAppend = false;
     end
     
-    if ~doNotAppend
-        if appendOnlineRef
+    if ~doNotAppend && appendOnlineRef
             nChan = size(EEG.data, 1);
             EEG = pop_chanedit(EEG, 'append', nChan, ...
                                'changefield',{nChan+1, 'labels', onlineRef}, ...
@@ -45,7 +44,6 @@ function EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef)
             chanlocs = pop_chancenter(EEG.chanlocs, []);
             EEG.chanlocs = chanlocs;
             EEG = eeg_checkset(EEG);
-        end
     else
         disp('do not need to append online reference');
     end
