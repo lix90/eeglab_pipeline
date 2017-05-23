@@ -4,9 +4,8 @@ function [EEG, varargout] = import_data(input_dir, fname)
 % Author: lix <alexiangli@outlook.com>
 % TODO: one argout
 
-
 % [ALLEEG EEG CURRENTSET ALLCOM] = eeglab;
-ALLEEG = []; EEG = []; CURRENTSET = [];
+ALLEEG = []; EEG = []; CURRENTSET = 0;
 [~,~,file_ext] = fileparts(fname);
 
 % load dataset
@@ -33,7 +32,7 @@ switch file_ext
     disp('file extension is not supported');
     return;
 end
-[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 0, ...
+[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, CURRENTSET, ...
                                      'setname', fname(1:end-3), ...
                                      'gui','off'); 
 EEG = eeg_checkset(EEG);

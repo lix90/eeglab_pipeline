@@ -15,11 +15,13 @@ if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 in_filename = get_filename(input_dir, file_ext);
 strs = get_str(in_filename, 's\d+([a-z])+\.eeg');
 id = get_id(in_filename);
-out_filename = fullfile(output_dir, strcat(id, '_rename.set'));
 
+initialize_eeg;
 for i = 1:length(in_filename)
     
-    if exist(out_filename{i}, 'file')
+    print_info(in_filename, i);
+    out_filename = fullfile(output_dir, strcat(id, '_rename.set'));
+    if exist(out_filename, 'file')
         disp('File exists!');
         continue
     end
@@ -39,7 +41,6 @@ for i = 1:length(in_filename)
     EEG = rename_events(EEG, old_marks, new_marks);
 
     % save
-    EEG = pop_saveset(EEG, 'filename', out_filename{i});
-    EEG = [];
+    EEG = save_data(EEG, out_filename);
 
 end
