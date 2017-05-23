@@ -2,7 +2,7 @@ clear, clc, close all
 base_dir = '~/Data/mabin/';
 input_tag = 'merge';
 icamat_tag = 'pre';
-output_tag = 'ica';
+output_tag = 'erp8s';
 file_ext = 'set';
 file_ext_ica = 'mat';
 
@@ -12,12 +12,12 @@ append_on_ref = true;
 off_ref = {'TP9', 'TP10'};
 
 srate = 250;
-hipass = 1;
+hipass = [];
 lowpass = 45;
 marks = {'S 11', 'S 12', ...
          'S 21', 'S 22', ...
          'S 31', 'S 32'};
-epoch_time = [-1.5, 3];
+epoch_time = [-1.5, 8];
 
 flatline = 5;
 mincorr = 0.4;
@@ -66,9 +66,11 @@ for i = 1:numel(id)
     end
     
     % high pass filtering
-    EEG = pop_eegfiltnew(EEG, hipass, 0);
-    EEG = eeg_checkset(EEG);
-
+    if exist('hipass', 'var') && ~isempty(hipass)
+        EEG = pop_eegfiltnew(EEG, hipass, 0);
+        EEG = eeg_checkset(EEG);
+    end
+    
     % low pass filtering
     if exist('lowpass', 'var') && ~isempty(lowpass)
         EEG = pop_eegfiltnew(EEG, 0, lowpass);
@@ -99,7 +101,7 @@ for i = 1:numel(id)
     end
 
     % reject badchans
-    EEG = pop_select(EEG, 'nochannel', ica.info.badchans);
+    EEG = pop_select(EEG, 'nochannel', union(ica.info.badchans, ica.info.rej_chan_by_epoch));
     
     % re-reference if offRef is average
     if isavg

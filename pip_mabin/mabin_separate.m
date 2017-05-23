@@ -1,70 +1,50 @@
 clear, clc, close all
 
 % set directory
-baseDir = '~/data/pain/';
-inputTag = 'preEpoch';
-outputTag = 'single';
-fileExtension = 'set';
-prefixPosition = 1;
-marks = {'pos_pain', 'pos_nopain', ...
-         'neg_nopain', 'neg_pain', ...
-         'neu_nopain', 'neu_pain' };
-timeRange = [-1 2];
-threshTrialPerSubj = 20; % 20%
-useCSD = 0;
+base_dir = '~/Data/mabin/';
+input_tag = 'erp8s';
+output_tag = 'single';
+icamat_tag = 'pre';
+file_ext = 'set';
+marks = {'S 11', 'S 12', ...
+         'S 21', 'S 22', ...
+         'S 31', 'S 32' };
+timeRange = [-1.5 8];
 
-%---------------------
-if useCSD
-    outputTag = [outputTag, 'CSD'];
-end
-inputDir = fullfile(baseDir, inputTag);
-outputDir = fullfile(baseDir, outputTag);
-if ~exist(outputDir, 'dir'); mkdir(outputDir); end
-[inputFilename, id] = getFileInfo(inputDir, fileExtension, prefixPosition);
+input_dir = fullfile(base_dir, input_tag);
+output_dir = fullfile(base_dir, output_tag);
+icamat_dir = fullfile(base_dir, icamat_tag);
+if ~exist(output_dir, 'dir'); mkdir(output_dir); end
+in_filename = get_filename(input_dir, file_ext);
+id = get_id(in_filename);
+in_filename_ica = strcat(id, '_', icamat_tag, '.mat');
 
 for i = 1:numel(id)
 
     % load set
-    fprintf('Loading (%i/%i %s)\n', i, length(id), inputFilename{i});
-    [ALLEEG, EEG, CURRENTSET] = importEEG(inputDir, inputFilename{i});
+    print_info(id, i);
+    ALLEEG = []; EEG = []; CURRENTSET = 0;
+    EEG = import_data(input_dir, in_filename{i});
+    load(fullfile(icamat_dir, in_filename_ica{i}));
     
     % reject
     EEG = pop_subcomp(EEG, [], 0);
     EEG = eeg_checkset(EEG);
     
-    EEG = autoRejTrial(EEG, [-80, 80], [6,3], [6,3], 100, 1);
-    EEG = eeg_checkset(EEG);
-    [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'gui','off', 'overwrite', ...
-                                         'on');
     % inpterpolate channels
-    ind = ~ismember({EEG.etc.origChanlocs.labels}, {'TP9', 'TP10'});
-    EEG = pop_interp(EEG, EEG.etc.origChanlocs(ind), 'spherical');
+    EEG = pop_interp(EEG, ica.info.orig_chanlocs, 'spherical');
     EEG = eeg_checkset(EEG);
     
-    %% csd
-    if useCSD
-        if i==1
-            [G, H] = getGHforEEGLAB(EEG);
-        end
-        if exist('G', 'var') && exist('H', 'var')
-            EEG.data = getCSDforEEGLAB(EEG, G, H);
-            EEG = eeg_checkset(EEG); 
-        end
-    end
-    
+    origEEG = EEG;
     %% seperate dataset into single dataset by each conditions
     for j = 1:numel(marks)
-        filename = strcat(id{i}, '_', marks{j});
-        outputFilenameFull = fullfile(outputDir, filename);
+        EEG = [];
+        fname = strcat(id{i}, '_', strrep(marks{j}, ' ', ''));
+        out_filename = fullfile(output_dir, fname);
         % skip if already exist
-        if exist(outputFilenameFull, 'file'); warning('files already exist'); continue; end
-        EEG = pop_epoch(EEG, marks(j), timeRange); % epoch into single condition
-        [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1+j, ...
-                                             'overwrite', 'off', 'gui', 'off', ...
-                                             'savenew', outputFilenameFull);
+        if exist(out_filename, 'file'); warning('files already exist'); continue; end
+        EEG = pop_epoch(origEEG, marks(j), [origEEG.xmin*1000, origEEG.xmax*1000]); 
         EEG = eeg_checkset( EEG );
-        [ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1+j, ...
-                                             'retrieve', 1, 'study', 0); 
     end
-    ALLEEG = []; EEG = []; CURRENTSET = 0;
+    
 end

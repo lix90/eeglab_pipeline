@@ -43,6 +43,7 @@ S  2 -> negative
 * source code `edit <function>`
 * eeglab directory
 * `lookfor <function>`
+
 # pipeline
 
 1. rename event labels
