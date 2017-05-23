@@ -1,8 +1,10 @@
 clear, clc, close all
 base_dir = '~/Data/mabin/';
 input_tag = 'merge';
-output_tag = 'pre';
+icamat_tag = 'pre';
+output_tag = 'ica';
 file_ext = 'set';
+file_ext_ica = 'mat';
 
 brain_template = 'Spherical';
 on_ref = 'FCz';
@@ -21,26 +23,14 @@ flatline = 5;
 mincorr = 0.4;
 linenoisy = [];
 
-thresh_param.low_thresh = -500;
-thresh_param.up_thresh = 500;
-trends_param.slope = 200;
-trends_param.r2 = 0.3;
-spectra_param.threshold = [-35, 35];
-spectra_param.freqlimits = [20 40];
-joint_param.single_chan = 8;
-joint_param.all_chan = 4;
-kurt_param.single_chan = 8;
-kurt_param.all_chan = 4;
-thresh_chan = 0.1;
-reject = 1;
-
-%%------------------------
 input_dir = fullfile(base_dir, input_tag);
 output_dir = fullfile(base_dir, output_tag);
+icamat_dir = fullfile(base_dir, icamat_tag);
 if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
 in_filename = get_filename(input_dir, file_ext);
 id = get_id(in_filename);
+in_filename_ica = strcat(id, '_', icamat_tag, '.mat');
 
 rm_chans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
             'VEOD', 'VEO', 'VEOU', 'VEOG', ...
@@ -51,8 +41,9 @@ rm_chans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
 
 for i = 1:numel(id)
 
+    EEG = []; ALLEEG = []; CURRENTSET = 0;
     print_info(id, i);
-    out_filename = fullfile(output_dir, sprintf('%s_%s.mat', id{i}, output_tag));
+    out_filename = fullfile(output_dir, sprintf('%s_%s.set', id{i}, output_tag));
     if exist(out_filename, 'file')
         warning('files alrealy exist!')
         continue
@@ -66,7 +57,8 @@ for i = 1:numel(id)
     end
 
     % import dataset
-    [EEG, ALLEEG, CURRENTSET] = import_data(input_dir, in_filename{i});
+    EEG = import_data(input_dir, in_filename{i});
+    load(fullfile(icamat_dir, in_filename_ica{i}));
 
     if EEG.srate > 500
        EEG = pop_resample(EEG, 500);
@@ -106,15 +98,9 @@ for i = 1:numel(id)
         EEG = eeg_checkset(EEG);
     end
 
-    orig_chanlocs = EEG.chanlocs;
-    EEG = rej_badchan(EEG, flatline, mincorr, linenoisy);
-    if ~isfield(EEG.etc, 'clean_channel_mask')
-        EEG.etc.clean_channel_mask = ones(1, EEG.nbchan);
-    end
-
-    badchans = {orig_chanlocs.labels};
-    badchans = badchans(~EEG.etc.clean_channel_mask);
-
+    % reject badchans
+    EEG = pop_select(EEG, 'nochannel', ica.info.badchans);
+    
     % re-reference if offRef is average
     if isavg
         EEG = pop_reref(EEG, []);
@@ -132,24 +118,14 @@ for i = 1:numel(id)
     EEG = pop_resample(EEG, srate);
     EEG = eeg_checkset(EEG);
 
-    try
-        % reject epochs
-        [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
-                                     joint_param, kurt_param, thresh_chan, reject);
-    catch err
-        err.message
-    end
-    try
-        % run ica
-        [ica.icawinv, ica.icasphere, ica.icaweights] = run_ica(EEG, isavg);
-        ica.info = info;
-        ica.info.badchans = badchans;
-        ica.info.orig_chanlocs = orig_chanlocs;
-        parsave(out_filename, ica, 'ica', '-mat');
-    catch err
-        err.message
-        fprintf('subj %i %s error!', i, id{i});
-    end
-    EEG = []; ALLEEG = []; CURRENTSET = [];
+    % reject epochs
+    EEG = pop_rejepoch(EEG, ica.info.rej_epoch_auto, 0);
+    
+    % apply ica
+    EEG = apply_ica(EEG, ica);
+    
+    % save datasets
+    EEG = pop_saveset(EEG, 'filename', out_filename);
+    
 end
 % eeglab redraw;
