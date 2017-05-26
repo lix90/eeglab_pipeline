@@ -2,7 +2,7 @@
 % s1kan, s1ziwo, s1qingjinkan
 clear, clc
 
-base_dir = '/Users/lix/projects/mabin'; %
+base_dir = '~/Data/mabin'; %
 input_dir = fullfile(base_dir, 'raw');
 output_dir = fullfile(base_dir, 'rename');
 file_ext = 'eeg';
@@ -20,20 +20,24 @@ initialize_eeg;
 for i = 1:length(in_filename)
     
     print_info(in_filename, i);
-    out_filename = fullfile(output_dir, strcat(id, '_rename.set'));
+    out_filename = fullfile(output_dir, strcat(id{i}, '_rename.set'));
     if exist(out_filename, 'file')
         disp('File exists!');
         continue
     end
 
     % load
-    EEG = import_data(input_dir, in_filename{i});
-
+    try
+        EEG = import_data(input_dir, in_filename{i});
+    catch err
+        disp(err.message);
+        continue;
+    end
     % rename
-    switch strs{i}
-      case 'qingjinkan'
+    switch strs{i}(1:3)
+      case 'qin'
         new_marks = kan;
-      case 'ziwo'
+      case 'ziw'
         new_marks = ziwo;
       case 'kan'
         new_marks = qjk;

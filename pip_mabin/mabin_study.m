@@ -1,0 +1,59 @@
+clear, clc
+base_dir = 'E:\Data\mabin';
+input_dir = fullfile(base_dir, 'erp');
+output_dir = fullfile(base_dir, 'study');
+name_std = 'mabin_emotion_regulation_1500ms_3000ms.study';
+name_task = 'emotion regulation';
+note_std = ['* 45hz low pass filtered;' ...
+            '* -1500-3000ms;';
+dipselect = [];
+inbrain = [];
+n_subjs = 32;
+id_separator = '_s';
+file_ext = 'set';
+
+v1 = {'kan' 'kan' 'zwkan' 'zwkan' 'qjkan' 'qjkan'};
+v2 = {'neutral' 'negative' 'neutral' 'negative' 'neutral' 'negative'};
+
+%% code starts
+if ~exist(output_dir, 'dir'); mkdir(output_dir); end
+if ~exist(input_dir, 'dir'); disp('input_dir does not exist\n'); return; end
+
+var1 = repmat(transpose(v1), [n_subjs, 1]);
+var2 = repmat(transpose(v2), [n_subjs, 1]);
+
+in_filenames = get_filename(input_dir, file_ext);
+ids = get_id(in_filenames, id_separator);
+
+% load files
+ALLEEG = []; EEG = []; STUDY = [];
+EEG = pop_loadset('filename', in_filenames, 'filepath', input_dir);
+[ALLEEG EEG CURRENTSET] = pop_newset(ALLEEG, EEG, 1,'study',0);
+
+% create studycommands cell arrays
+studycommands = cell(size(in_filenames));
+for i = 1:numel(in_filenames)
+	studycommands{i} = {'index', i, ...
+                        'subject', ids{i}, ...
+                        'variable', var1{i}, ...
+                        'group', var2{i}};
+end
+
+% create study
+[STUDY ALLEEG] = std_editset( STUDY, ALLEEG, ...
+								'name', name_std, ...
+								'task', name_task, ...
+								'notes', note_std, ...
+								'commands', studycommands, ...
+								'updatedat', 'on');
+
+% change design
+STUDY = std_makedesign(STUDY, ALLEEG, 1, ...
+							'variable1', 'type', 'pairing1', 'on', ...
+							'variable2', 'group', 'pairing2', 'on', ...
+							'values1', unique(v1), ...
+							'values2', unique(v2), ...
+							'filepath', output_dir);
+
+% save study
+STUDY = pop_savestudy(STUDY, EEG, 'filename', name_std, 'filepath', output_dir);

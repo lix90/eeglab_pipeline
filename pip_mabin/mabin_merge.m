@@ -1,7 +1,7 @@
 % merging data
 % s1kan, s1ziwo, s1qingjinkan
 clear, clc
-base_dir = '/Users/lix/projects/mabin'; %
+base_dir = '~/Data/mabin'; %
 input_dir = fullfile(base_dir, 'rename');
 output_dir = fullfile(base_dir, 'merge');
 file_ext = 'set';
@@ -23,8 +23,8 @@ for i = 1:length(id)
     set_now = in_filename(set_ind);
 
     % merge data
-    EEG = merge_data(input_dir, set_now);
-    
+    EEG = merge_data(input_dir, set_now);    
+
     % save data
     EEG = save_data(EEG, out_filename);
 

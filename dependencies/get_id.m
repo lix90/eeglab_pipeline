@@ -1,4 +1,4 @@
-function id = get_ids(filename, sep)
+function id = get_id(filename, sep)
 
 if ~exist('sep', 'var')
     sep = '[^a-z0-9]';
