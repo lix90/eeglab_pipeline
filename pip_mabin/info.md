@@ -16,11 +16,6 @@ date: 2017-05-21 14:26
 
 # events
 
-cycles = [3, 0.5]
-freqs = [3, 30]
-cycles of min freq = 3
-cycles of max freq = (1-0.8)*maxfreq = 0.5*30 = 6
-
 S  1 -> neutral
 S  2 -> negative
 
@@ -39,6 +34,16 @@ S  2 -> negative
 
 `s1kan` `s1ziwo` `s1qingjinkan`
 
+# learn to write eeglab script
+
+* `EEG` `ALLEEG` `STUDY`
+* `eegh`
+* `EEG.history`
+* help in eeglab GUI
+* source code `edit <function>`
+* eeglab directory
+* `lookfor <function>`
+
 # pipeline
 
 1. rename event labels
@@ -47,3 +52,7 @@ S  2 -> negative
 4. identify artificial components
 5. reject components, interpolate channels, extract datasets based on epochs
 6. create study
+
+function output = func_name(arg1, arg2)
+
+% contents

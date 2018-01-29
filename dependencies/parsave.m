@@ -1,4 +1,4 @@
-function parsave(fname, data2save, datastr,opts)
+function parsave(fname, data2save, datastr, opts)
 % inputs:
 % fname is the fullpath filename
 % data is the variable to save
@@ -10,6 +10,10 @@ if ~exist('opts', 'var')
     opts = '-mat';
 end
 
+dir_ = fileparts(fname);
+if ~exist(dir_, 'dir');
+    mkdir(dir_);
+end
 
 data = data2save;
 eval([datastr '= data;']);

@@ -1,4 +1,4 @@
-function rej = rej_rt(EEG, resp, timewin)
+function rej = rej_epoch_by_rt(EEG, resp, timewin)
 
 if ~iscellstr(resp)
     disp('resp must be cellstr');
@@ -8,6 +8,10 @@ end
 if length(timewin)~=2
     disp('timewin must have two elements');
     return;
+end
+
+if abs(max(timewin))<10
+   timewin = timewin*1000; 
 end
 
 ntrials = EEG.trials;

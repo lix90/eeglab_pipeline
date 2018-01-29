@@ -1,45 +1,56 @@
-function EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef)
-    
+function EEG = add_chanloc(EEG, brain_template, online_ref, append_online_ref)    
 % add channel locations & recover online reference 
 % e.g. EEG = addChanLoc(EEG, 'Spherical', 'FCz', true)
     
-    eeglabDir = fileparts(which('eeglab.m'));
-    switch brainTemplate
+    if ~exist('brain_template', 'var')
+        brain_template = g.brain_template;
+    end
+    
+    if ~exist('online_ref', 'var')
+       online_ref = g.online_ref; 
+    end
+    
+    if ~exist('append_online_ref', 'var')
+        append_online_ref = g.append_online_ref;
+    end
+    
+    eeglab_dir = fileparts(which('eeglab.m'));
+    switch brain_template
       case 'MNI'
-        locFile = 'standard_1005.elc';
-        chanLocDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BEM', ...
-                              locFile);
+        chanloc_file = 'standard_1005.elc';
+        chanloc_dir = fullfile(eeglab_dir, 'plugins', 'dipfit2.3', 'standard_BEM', ...
+                              chanloc_file);
       case 'Spherical'
-        locFile = 'standard-10-5-cap385.elp';
-        chanLocDir = fullfile(eeglabDir, 'plugins', 'dipfit2.3', 'standard_BESA', ...
-                              locFile);
+        chanloc_file = 'standard-10-5-cap385.elp';
+        chanloc_dir = fullfile(eeglab_dir, 'plugins', 'dipfit2.3', 'standard_BESA', ...
+                              chanloc_file);
       case 'EGI65'  % EGI 64 electrodes cap
-        locFile = 'EGI65.elp'; 
-        chanLocDir = which(locFile);
+        chanloc_file = 'EGI65.elp'; 
+        chanloc_dir = which(chanloc_file);
     end
 
     % add channel locations
-    EEG = pop_chanedit(EEG, 'lookup', chanLocDir); % add channel location
+    EEG = pop_chanedit(EEG, 'lookup', chanloc_dir); % add channel location
     EEG = eeg_checkset(EEG);
 
-    % check if onlineRef exist
-    if any(ismember({EEG.chanlocs.labels}, onlineRef))
-        doNotAppend = true;
+    % check if online_ref exist
+    if any(ismember({EEG.chanlocs.labels}, online_ref))
+        append_or_not = true;
     else
-        doNotAppend = false;
+        append_or_not = false;
     end
     
-    if ~doNotAppend && appendOnlineRef
+    if ~append_or_not && append_online_ref
             nChan = size(EEG.data, 1);
             EEG = pop_chanedit(EEG, 'append', nChan, ...
-                               'changefield',{nChan+1, 'labels', onlineRef}, ...
-                               'lookup', chanLocDir, ...
-                               'setref',{['1:',int2str(nChan+1)], onlineRef}); % add online reference
+                               'changefield',{nChan+1, 'labels', online_ref}, ...
+                               'lookup', chanloc_dir, ...
+                               'setref',{['1:',int2str(nChan+1)], online_ref}); % add online reference
             EEG = eeg_checkset(EEG);
-            newChanLoc = createChanLoc(onlineRef, nChan+1);
-            EEG = pop_reref(EEG, [], 'refloc', newChanLoc); % retain online reference data back
+            new_chanloc = create_chanloc(online_ref, nChan+1);
+            EEG = pop_reref(EEG, [], 'refloc', new_chanloc); % retain online reference data back
             EEG = eeg_checkset(EEG);
-            EEG = pop_chanedit(EEG, 'lookup', chanLocDir, 'setref',{['1:', int2str(size(EEG.data, 1))] 'average'});
+            EEG = pop_chanedit(EEG, 'lookup', chanloc_dir, 'setref',{['1:', int2str(size(EEG.data, 1))] 'average'});
             EEG = eeg_checkset(EEG);
             chanlocs = pop_chancenter(EEG.chanlocs, []);
             EEG.chanlocs = chanlocs;
@@ -48,9 +59,9 @@ function EEG = add_chanloc(EEG, brainTemplate, onlineRef, appendOnlineRef)
         disp('do not need to append online reference');
     end
 
-function newChanLoc = createChanLoc(chan, n)
+function new_chanloc = create_chanloc(chan, n)
 
-    newChanLoc = struct('labels', chan,...
+    new_chanloc = struct('labels', chan,...
                         'type', [],...
                         'theta', [],...
                         'radius', [],...

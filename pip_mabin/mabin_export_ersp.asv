@@ -1,0 +1,45 @@
+%% script for exporting ERSP
+
+base_dir = 'E:\Data\mabin';
+output_folder = 'output_erp';
+chan_labels = {'Pz', 'P1'}; % or {'Pz', 'P1', 'P2'} 多个点
+time_range = [400 1000];  % 时间（ms）范围
+freq_range = [8 13]; % 频率（hz）范围
+
+% Code begins
+output_dir = fullfile(base_dir, output_folder);
+mkdir_p(output_dir);
+
+subj = to_col_vector(STUDY.subject);
+
+[STUDY, ersp_data, ersp_times, ersp_freqs] = ...
+    std_erspplot(STUDY, ALLEEG, ...
+                'channels', chan_labels, ...
+                'noplot', 'on', ...
+                'averagechan', 'on');
+
+var1 = to_row_vector(STUDY.design(1).variable(1).value);
+var2 = to_row_vector(STUDY.design(1).variable(2).value);
+vars = cellstr_join(var1, var2, '_');
+ersp_data = ersp_data(:);
+ersp_data = cellfun(@(x) {squeeze(mean(x,3))}, ersp_data);
+
+%%
+ersp = zeros(length(subj), length(vars));
+for i = 1:length(vars)  % loop through the group
+    ersp(:,i) = pick_ersp(ersp_data{i}, ersp_times, time_range, freq_range);
+end
+
+ % prepare to write
+    hdr = [{'subj'},vars];
+    ersp_to_write = [hdr; [subj, num2cellstr(ersp)]];
+    
+    fname_ersp = sprintf('ersp-%s_%s_f%i-%i_t%i-%i.csv', ...
+                         str_join(chan_labels, '-'),...
+                         freq_range(1),...
+                         freq_range(2),...
+                         time_range(1),...
+                         time_range(2));
+    
+    % write
+    cell2csv(fullfile(output_dir, fname_amps), ersp_to_write, ','); 

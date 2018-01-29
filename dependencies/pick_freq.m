@@ -11,6 +11,6 @@ if nl==2 && freq_range(1) > freq_range(2)
     disp('Error: freq_range(1) shouldn''t be bigger than freq_range(2).')
 end
 
-times = to_col_vector(times);
-time_range = to_col_vector(time_range);
-idx = dsearchn(times, time_range);
+freqs = to_col_vector(freqs);
+freq_range = to_col_vector(freq_range);
+idx = dsearchn(freqs, freq_range);

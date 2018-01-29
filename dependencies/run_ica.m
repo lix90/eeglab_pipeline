@@ -1,26 +1,35 @@
-function [icawinv, icasphere, icaweights] = run_ica(EEG, isavg);
-% TODO fix it
+function EEG = run_ica(EEG, isavg, chanind)
 
-
-nChan = size(EEG.data, 1);
-if isavg
-    if strcmp(computer, 'GLNXA64')
-        [wts, sph] = binica(EEG.data, 'extended', 1, 'pca', nChan-1);
-    else
-        [wts, sph] = runica(EEG.data, 'extended', 1, 'pca', nChan-1);
-    end
-else
-    if strcmp(computer, 'GLNXA64')
-        [wts, sph] = binica(EEG.data, 'extended', 1);
-    else
-        [wts, sph] = runica(EEG.data, 'extended', 1);
-    end
+if ~exist('chanind', 'var')
+    chanind = [];
 end
 
-iWts = pinv(wts*sph);
-scaling = repmat(sqrt(mean(iWts.^2))', [1 size(wts,2)]);
-wts = wts.*scaling;
+if isempty(chanind)
+   nc = size(EEG.data, 1); 
+elseif ischar(chanind) || iscellstr(chanind)
+   nc = numel(find(pick_channel_types(EEG, chanind)));
+end
 
-icawinv = pinv(wts*sph);
-icasphere = sph;
-icaweights = wts;
+if isavg
+    npc = nc-1;
+else
+    npc = nc;
+end
+
+if strcmp(computer, 'GLNXA64')
+    EEG = pop_runica(EEG, 'icatype', 'binica', 'pca', npc, 'chanind', chanind);
+else
+    EEG = pop_runica(EEG, 'icatype', 'runica', 'pca', npc, 'chanind', chanind);
+end
+
+% iwts = pinv(wts*sph);
+% scaling = repmat(sqrt(mean(iwts.^2))', [1 size(wts,2)]);
+% wts = wts.*scaling;
+
+% icawinv = pinv(wts*sph);
+% icasphere = sph;
+% icaweights = wts;
+
+% icawinv = EEG.icawinv;
+% icasphere = EEG.icasphere;
+% icaweights = EEG.icaweights;

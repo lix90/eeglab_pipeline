@@ -38,7 +38,7 @@ input_dir = fullfile(base_dir, input_tag);
 output_dir = fullfile(base_dir, output_tag);
 if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
-[input_fname, id] = get_fileinfo(input_dir, file_ext, seperator);
+[input_fname, id] = get_fileinfo(input_dir, file_ext);
 
 rm_chans = {'HEOL', 'HEOR', 'HEOG', 'HEO', ...
             'VEOD', 'VEO', 'VEOU', 'VEOG', ...
@@ -56,78 +56,32 @@ parfor i = 1:numel(id)
         warning('files alrealy exist!')
         continue
     end
+    
     ica = struct();
-    if strcmp(off_ref, 'average')
-        isavg = 1;
-    else
-        isavg = 0;
-    end
     
     % import dataset
     [EEG, ALLEEG, CURRENTSET] = import_data(input_dir, input_fname{i});
     
-    % high pass filtering
-    EEG = pop_eegfiltnew(EEG, hipass, 0);
-    EEG = eeg_checkset(EEG);
+    EEG = filtering(EEG);
     
-    % low pass filtering
-    if exist('lowpass', 'var') && ~isempty(lowpass)
-        EEG = pop_eegfiltnew(EEG, 0, lowpass);
-        EEG = eeg_checkset(EEG);
-    end
+    EEG = add_chanloc(EEG);
     
-    % add channel locations
-    EEG = add_chanloc(EEG, brain_template, on_ref, append_on_ref);
+    EEG = rej_chans(EEG, 'nonbrain');
     
-    % remove channels
-    if ~isavg
-        real_rm_chans = setdiff(rm_chans, off_ref);
-    else
-        real_rm_chans = rm_chans;
-    end
-    
-    EEG = pop_select(EEG, 'nochannel', real_rm_chans);
-    EEG = eeg_checkset(EEG);
-    
-    labels = {EEG.chanlocs.labels};
-    % re-reference if necessary
-    if ~isavg
-        real_off_ref = intersect(labels, off_ref);
-        if strcmpi(char(real_off_ref), 'm2')
-            indexM2 = find(ismember(labels, real_off_ref));
-            EEG.data(indexM2, :) = EEG.data(indexM2, :)/2;
-        end
-        EEG = pop_reref(EEG, find(ismember(labels, real_off_ref)));
-        EEG = eeg_checkset(EEG);
-    else
-        EEG = pop_reref(EEG, []);
-        EEG = eeg_checkset(EEG);
-    end
+    EEG = set_ref(EEG);
 
     orig_chanlocs = EEG.chanlocs;
     
-    % reject bad channels
-    % badChannels = eeg_detect_bad_channels(EEG);
-    EEG = rej_badchan(EEG, flatline, mincorr, linenoisy); 
-    if ~isfield(EEG.etc, 'clean_channel_mask')
-        EEG.etc.clean_channel_mask = ones(1, EEG.nbchan);
-    end
+    EEG = rej_chans(EEG, 'bad');
+    bad_chans = {orig_chanlocs.labels};
+    bad_chans = bad_chans(~EEG.etc.clean_channel_mask);
     
-    badchans = {orig_chanlocs.labels};
-    badchans = badchans(~EEG.etc.clean_channel_mask);
-    
-    % labels = {EEG.chanlocs.labels};
-    % badchans = labels(badChannels);
-    % EEG = pop_select(EEG, 'nochannel', badChannels);
-    
-    % re-reference if offRef is average
-    if isavg
-        EEG = pop_reref(EEG, []);
-        EEG = eeg_checkset(EEG);
+    if is_avgref(g.offline_ref)
+        EEG = set_ref_avg(EEG);
     end
 
     % epoching
-    EEG = pop_epoch(EEG, natsort(marks), epoch_time, 'epochinfo', 'yes');
+    EEG = pop_epoch(EEG, natsort(g.event_marks), g.event_timerange);
     EEG = eeg_checkset(EEG);
     
     % baseline-zero
@@ -140,18 +94,23 @@ parfor i = 1:numel(id)
     try
         % reject epochs
         [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, spectra_param, ...
-                                     joint_param, kurt_param, thresh_chan, reject);
+                                     joint_param, kurt_param, thresh_chan, ...
+                                     reject);
         
         % run ica
-        [ica.icawinv, ica.icasphere, ica.icaweights] = run_binica(EEG, ...
-                                                          isavg);
+        [ica.icawinv, ica.icasphere, ica.icaweights] = ...
+            run_binica(EEG, is_avgref(g.offline_ref));
+        
         ica.info = info;
-        ica.info.badchans = badchans;
+        ica.info.bad_chans = bad_chans;
         ica.info.orig_chanlocs = orig_chanlocs;
+        
         parsave2(output_fname_full, ica, 'ica', '-mat');
         
     catch
+        
         fprintf('subj %i %s error!', i, id{i});
+        
     end
     
     EEG = []; ALLEEG = []; CURRENTSET = [];

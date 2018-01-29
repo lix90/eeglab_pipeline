@@ -1,20 +1,22 @@
-function [EEG, info] = rej_epoch_auto(EEG, thresh_param, trends_param, ...
-                                      spectra_param, joint_param, kurt_param, ...
-                                      thresh_chan, reject)
+function [EEG, rej_epoch_index, rej_chan_by_epoch] = ...
+        rej_epoch_auto(EEG, thresh_param, trends_param, ...
+                       spectra_param, joint_param, kurt_param, ...
+                       thresh_chan, reject)
 
 info.orig_ntrial = EEG.trials;
 info.orig_chanlocs = EEG.chanlocs;
 
 % identify epoch
-EEG = rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param, ...
-                       joint_param, kurt_param, thresh_chan);
+[index_rej, bad_chans] = ...
+    rej_detect_epoch(EEG, thresh_param, trends_param, spectra_param, ...
+                     joint_param, kurt_param, thresh_chan);
 
 if reject
-    indexRej = EEG.reject.rejglobal;
-    EEG = pop_rejepoch(EEG, indexRej ,0);
+    EEG = rej_chan_by_label(EEG, badchans);
+    EEG = pop_rejepoch(EEG, index_rej ,0);
 end
 
-info.rej_epoch_auto = indexRej;
+info.rej_epoch_auto = index_rej;
 labels = {info.orig_chanlocs.labels};
 info.rej_chan_by_epoch = setdiff(labels, {EEG.chanlocs.labels});
 

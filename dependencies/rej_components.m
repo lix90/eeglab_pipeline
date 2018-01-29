@@ -1,4 +1,4 @@
-function EEG = rej_bad_comps(EEG, bads, confirm)
+function [EEG] = rej_components(EEG, bads, confirm)
 
 if ~exist('confirm', 'var')
     confirm = 0;  % do not confirm, just reject it.
@@ -18,10 +18,12 @@ else
     end
 end
 
-EEG.etc.info.orig_num_comps = size(EEG.icaweights,1);
-% rejecting
-EEG = pop_subcomp(EEG, bads, confirm);
-EEG.etc.info.bad_comps = bads;
+EEG.etc.original_number_of_comps = size(EEG.icaweights,1);
+
+if ~isempty(bads)
+    EEG = pop_subcomp(EEG, bads, confirm);
+end
+EEG.etc.bad_comps = bads;
 EEG = eeg_checkset(EEG);
 
 
