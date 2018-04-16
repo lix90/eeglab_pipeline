@@ -31,8 +31,9 @@ function [epoch_index, bad_chans] = rej_detect_epoch(EEG, rejepoch)
     tmp = true;
     if isfield(rejepoch, 'perc_thresh')
         while tmp
-            EEG = detect_epoch(EEG, rejepoch);
-            chanrej = rej_chan_by_ntrial(EEG, rejepoch.perc_thresh);
+            [rejE, rejG] = detect_epoch(EEG, rejepoch);
+            perc = sum(rejE,2)/EEG.trials;
+            chanrej = find(perc >= rejepoch.perc_thresh);
             % Write log
             EEG = pop_select(EEG, 'nochannel', chanrej);
             EEG = eeg_checkset(EEG);
@@ -41,14 +42,14 @@ function [epoch_index, bad_chans] = rej_detect_epoch(EEG, rejepoch)
             end
         end
     else
-        EEG = detect_epoch(EEG, rejepoch);
+        [rejE, rejG] = detect_epoch(EEG, rejepoch);
     end
     new_chanlabels = {EEG.chanlocs.labels};
     
-    epoch_index = EEG.reject.rejglobal;
+    epoch_index = rejG;
     bad_chans = setdiff(old_chanlabels, new_chanlabels);
 
-function EEG = detect_epoch(EEG, rejepoch)
+function [rejE, rejG] = detect_epoch(EEG, rejepoch)
     
     if all(isfield(rejepoch, {'low_value', 'high_value'}))
         EEG = rej_epoch_by_thresh(EEG, rejepoch.low_value, rejepoch.high_value);
@@ -69,3 +70,6 @@ function EEG = detect_epoch(EEG, rejepoch)
     if all(isfield(rejepoch, {'joint_local', 'joint_global'}))
         EEG = rej_epoch_by_jointprob(EEG, rejepoch.joint_local, rejepoch.joint_global);
     end
+    
+    [rejE, rejG] = rej_superpose(EEG);
+  

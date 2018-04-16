@@ -28,6 +28,8 @@ switch file_ext
   case '.raw'
     disp('pop_readegi() automatically reads chanlocs.');
     EEG = pop_readegi(fullfile(input_dir, fname), [], [], 'auto');
+  case {'.dap', '.rs3'}
+       EEG = loadcurry(fullfile(input_dir, fname));
   otherwise
     disp('file extension is not supported');
     return;

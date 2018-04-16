@@ -19,6 +19,10 @@ if ~any(ismember(type_supported, type))
     return;
 end
 
+if isempty(chan_labels)
+    return;
+end
+
 chanlocs = EEG.chanlocs;
 
 idx_e = find(pick_channel_index(EEG, chan_labels));

@@ -1,17 +1,17 @@
 function g = init_param
 
 %% Preprocessing before ICA
-g.base_dir = '~/Projects/autism_sst';
+g.base_dir = '~/data_processing/autismtraitssst';
 g.ica_input_folder = 'raw';
 g.ica_output_folder = 'ica';
 g.postica_input_folder = 'ica';
-g.postica_output_folder = 'postica'
+g.postica_output_folder = 'postica';
 g.file_ext = {'set', 'cnt'};
 
 % Channel locations, re-referencing
 g.brain_template = 'Spherical';
 g.online_ref = 'M1';
-g.append_online_ref = false;
+g.append_online_ref = true;
 g.offline_ref = {'M1', 'M2'};
 g.veo = 'VEO';
 g.heo = 'HEO';
@@ -21,10 +21,9 @@ g.high_hz = 1;
 g.low_hz = [];
 g.high_hz_erp = [];
 g.low_hz_erp = [];
-g.epoch_events = {'11', '12'};
-g.epoch_eventnames = {};
+g.epoch_events = {'10', '11'};
 g.epoch_timerange = [-1, 2];
-g.wrong_events = [];
+g.wrong_events = ['21', '33'];
 g.resp_events = [];
 g.resp_timewin = [];
 

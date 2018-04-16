@@ -17,7 +17,7 @@ if isempty(ichan)
     ichan = 1:EEG.nbchan;
 end
 
-EEG = pop_rejtrend(EEG, 1, ichan, EEG.pnts, slope, r2, 0, 0, 0);
+EEG = pop_rejtrend(EEG, 1, ichan, EEG.pnts, slope, r2, 1, 0, 0);
 EEG = eeg_checkset(EEG);
 % [EEG.reject.rejconst, EEG.reject.rejconstE] = ...
 %     rejtrend(EEG.data, EEG.pnts, slope, r2, step);

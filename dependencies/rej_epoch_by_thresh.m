@@ -17,7 +17,7 @@ if isempty(ichan)
     ichan = 1:EEG.nbchan;
 end
 
-EEG = pop_eegthresh(EEG, 1, ichan, low, up, EEG.xmin, EEG.xmax, 0, 0);
+EEG = pop_eegthresh(EEG, 1, ichan, low, up, EEG.xmin, EEG.xmax, 1, 0);
 
 % [~, rej_thresh, ~, rej_threshE] = eegthresh(EEG.data, ...
 %                                             EEG.pnts, ...

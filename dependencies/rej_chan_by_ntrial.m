@@ -1,7 +1,7 @@
 function chanrej = rej_chan_by_ntrial(EEG, thresh)
 
-EEG = eeg_rejsuperpose(EEG, 0, 1, 1, 1, 1, 1, 1, 1);
-EEG = eeg_checkset(EEG);
+%EEG = eeg_rejsuperpose(EEG, 1, 1, 1, 1, 1, 1, 1, 1);
+%EEG = eeg_checkset(EEG);
 
 rejglobalE = EEG.reject.rejglobalE;
 

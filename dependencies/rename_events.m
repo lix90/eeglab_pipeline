@@ -12,9 +12,13 @@ end
 
 events = {EEG.event.type};
 
+if isnumeric(events{1})
+   events = cellfun(@num2cellstr, events);
+end
+
 if ~all(ismember(from_ids, events))
     disp('Error: some events to rename is not found in EEG.event.');
-    return;
+    %return;
 end
 
 num_from_ids = numel(from_ids);
@@ -29,7 +33,7 @@ for i = 1:num_from_ids
     ind = ismember(events, from_ids{i});
     if isempty(ind)
         disp('Error: Events are not compatible.');
-        return;        
+        continue;        
     end
     [EEG.event(ind).type] = deal(to_ids{i});
 end

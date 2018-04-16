@@ -13,6 +13,9 @@ n = EEG.trials;
 wrong = zeros(1,n);
 for i = 1:n
     tmp_event = EEG.epoch(1, i).eventtype;
+    if ~iscellstr(tmp_event) && isnumeric(tmp_event{1})
+        tmp_event = cellfun(@num2cellstr, tmp_event);
+    end
     % if any(cellfun(@isnumeric, tmp_event))
     %     tmp_event = cellfun(@(x) {num2str(x)}, tmp_event);
     % end

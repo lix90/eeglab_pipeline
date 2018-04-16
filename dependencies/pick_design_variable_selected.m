@@ -1,10 +1,6 @@
-function [vars, values] = pick_design_variable_selected(STUDY, std_num)
+function [vars, values] = pick_design_variable_selected(STUDY)
 
-if ~exist('std_num', 'var')
-    std_num = 1;
-end
-
-vars = {STUDY.design(std_num).variable.label};
+vars = {STUDY.design.variable.label};
 
 cell = STUDY.design.cell;
 var_values = {cell.value};

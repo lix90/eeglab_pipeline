@@ -4,7 +4,7 @@ if ischar(filename)
     filename = {filename};
 end
 
-pattern = '[_-.]';
+pattern = '[^0-9a-zA-Z]';
 
 fnparts = regexp(filename, pattern, 'split');
 out = cellfun(@(x) x(position), fnparts);

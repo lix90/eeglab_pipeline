@@ -46,6 +46,17 @@ if length(find(var==2))==1
     grps = cellfun(@(x) x{var==2}, values_tmp, 'uniformoutput', false);
     cons = cellfun(@(x) x{var~=2}, values_tmp, 'uniformoutput', false);
     cases = {cell.case};
+    
+    if ~iscellstr(cons)
+        cons_ = cellfun(@(x) num2cellstr(x), cons);
+        cons = cons_;
+    end
+    
+    if ~iscellstr(grps)
+        grps_ = cellfun(@(x) num2cellstr(x), grps);
+        grps = grps_;
+    end
+    
     grps = grps(ismember(cons, cons(1)));
     grps_unique = unique(grps);
     cases = cases(ismember(cons, cons(1)));

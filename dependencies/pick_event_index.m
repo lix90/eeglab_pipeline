@@ -1,4 +1,4 @@
-function ind = pick_events(EEG, event_ids, time_range)
+function ind = pick_event_index(EEG, event_ids, time_range)
 % Pick events, return index of events
 
 if ischar(event_ids)
